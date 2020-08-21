@@ -1,0 +1,169 @@
+# depslib dependency file v1.0
+1597990648 source:c:\d_drive\programs\text_deckbuilder\main.cpp
+	<iostream>
+	<string>
+	"Game.h"
+	<vector>
+	<string>
+
+1597966565 c:\d_drive\programs\text_deckbuilder\game.h
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Event.h"
+	<vector>
+	<map>
+	<string>
+
+1597989137 c:\d_drive\programs\text_deckbuilder\player.h
+	"Card.h"
+	"Relic.h"
+	<vector>
+	<string>
+	<map>
+
+1597989165 c:\d_drive\programs\text_deckbuilder\card.h
+	<string>
+	<vector>
+
+1597989156 c:\d_drive\programs\text_deckbuilder\relic.h
+	<string>
+	<vector>
+
+1597991246 c:\d_drive\programs\text_deckbuilder\enemy.h
+	"Card.h"
+	<string>
+	<vector>
+
+1597990354 c:\d_drive\programs\text_deckbuilder\game.cpp
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Event.h"
+	"Game.h"
+	<vector>
+	<map>
+	<string>
+	<sstream>
+	<iostream>
+
+1597816635 c:\d_drive\programs\text_deckbuilder\enemy.cpp
+	<string>
+	<vector>
+	"Enemy.h"
+
+1597714591 c:\d_drive\programs\text_deckbuilder\relic.cpp
+	"Relic.h"
+	<string>
+	<vector>
+
+1597775761 c:\d_drive\programs\text_deckbuilder\card.cpp
+	"Card.h"
+	<string>
+	<vector>
+
+1597816667 c:\d_drive\programs\text_deckbuilder\player.cpp
+	"Card.h"
+	"Relic.h"
+	"Player.h"
+	<vector>
+	<string>
+	<algorithm>
+	<random>
+
+1597991956 c:\d_drive\programs\text_deckbuilder\event.h
+	"Enemy.h"
+	<vector>
+	<string>
+	<map>
+
+1597907283 c:\d_drive\programs\text_deckbuilder\event.cpp
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Card.h"
+	"Event.h"
+	"Enemy.cpp"
+	"Relic.cpp"
+	"Card.cpp"
+	"Player.cpp"
+
+1597775761 source:c:\d_drive\programs\text_deckbuilder\card.cpp
+	"Card.h"
+	<string>
+	<vector>
+
+1597816635 source:c:\d_drive\programs\text_deckbuilder\enemy.cpp
+	<string>
+	<vector>
+	"Enemy.h"
+
+1597990354 source:c:\d_drive\programs\text_deckbuilder\game.cpp
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Event.h"
+	"Game.h"
+	<vector>
+	<map>
+	<string>
+	<sstream>
+	<iostream>
+
+1597714591 source:c:\d_drive\programs\text_deckbuilder\relic.cpp
+	"Relic.h"
+	<string>
+	<vector>
+
+1597991810 source:c:\d_drive\programs\text_deckbuilder\player.cpp
+	"Card.h"
+	"Relic.h"
+	"Player.h"
+	<vector>
+	<string>
+	<algorithm>
+	<random>
+	<iostream>
+
+1597989165 source:c:\d_drive\programs\text_deckbuilder\card.h
+	<string>
+	<vector>
+
+1597991246 source:c:\d_drive\programs\text_deckbuilder\enemy.h
+	"Card.h"
+	<string>
+	<vector>
+
+1597991956 source:c:\d_drive\programs\text_deckbuilder\event.h
+	"Enemy.h"
+	<vector>
+	<string>
+	<map>
+
+1597991973 source:c:\d_drive\programs\text_deckbuilder\event.cpp
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Card.h"
+	"Event.h"
+
+1597966565 source:c:\d_drive\programs\text_deckbuilder\game.h
+	"Player.h"
+	"Enemy.h"
+	"Relic.h"
+	"Event.h"
+	<vector>
+	<map>
+	<string>
+
+1597989137 source:c:\d_drive\programs\text_deckbuilder\player.h
+	"Card.h"
+	"Relic.h"
+	<vector>
+	<string>
+	<map>
+
+1597989156 source:c:\d_drive\programs\text_deckbuilder\relic.h
+	<string>
+	<vector>
+

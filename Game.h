@@ -19,23 +19,40 @@ public:             // Access specifier
 
     void init();
 
+    //map constants
     int num_events = 20;
+    int max_events_per_row = 6;
+    //int max_events_per_row = 1; //DEBUG
+    //
 
     Player *player = new Player();
     bool playerQuit = false;
     bool end_game = false;
     pair<int, int> player_location = make_pair(0, 0);
     vector<vector<Event*>> event_map; //layers of events
+    vector<vector<string>> connections;
+
     void play_player_turn();
-    bool play_enemy_turn(); //returns true if all enemies are dead, false otherwise.
+    void play_card(int idx);
+    void play_enemy_turn();
     void display_player();
     void display_enemies();
-    void combat();
     void init_event_map();
     void play_map();
     void display_map();
+    void inc_player_effects();
+    void inc_enemy_effects();
+
+    //events
+    void combat();
+    void bonfire();
+    void enemy_battle();
+    void elite_enemy_battle();
+    void boss_battle();
 
     map<int, string> event_chances;
+
+    map<string, char> event_conv;
 
 };
 

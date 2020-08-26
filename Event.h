@@ -18,13 +18,28 @@ public:
     bool is_elite_enemy = false;
     bool is_shop = false;
     bool is_chance = false;
-    bool is_relic = false;
+    bool is_treasure = false;
     bool is_start = false;
     bool is_boss = false;
     bool fight = false;
     int num_enemies;
     string classif;
     vector<Enemy*> curr_enemies;
+    vector<Event*> lower_events;
+    //vector<Event*> upper_events;
+    void set_lower_events(vector<Event*> lower_events);
+
     void init_enemies();
+    void init_elite_enemies();
+    void init_boss();
+    bool enemy_reward(Player *p);
+    bool elite_enemy_reward(Player *p);
+    bool shop_offer(Player *p);
+    bool chance_offer(Player *p);
+    bool get_treasure(Player *p);
+    bool boss_reward(Player *p);
+
+    bool all_dead();
+    void skip();
 
 };

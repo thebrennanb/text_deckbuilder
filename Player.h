@@ -2,6 +2,7 @@
 
 #include "Card.h"
 #include "Relic.h"
+#include "Effect.h"
 
 #include<vector>
 #include<string>
@@ -20,12 +21,13 @@ public:             // Access specifier
     vector<Card*> discard_pile;
     vector<Card*> hand;
     int hp = 50;
-    int max_stamina = 5;
+    int max_hp = 50;
+    int max_stamina = 6;
     int stamina = 0;
     int num_draw = 5;
-    vector<Relic> relics;
-    map<string, int> effectsMagnitudes;
-    vector<string> effects;
+    int coins = 0;
+    vector<Relic*> relics;
+    vector<Effect*> effects;
     int target_enemy;
 
     bool isDead();
@@ -37,4 +39,6 @@ public:             // Access specifier
     void display_discard_pile();
     void display_deck();
     void round_start();
+    void add_to_coins(int n);
+    void add_effect(string name, int magnitude);
 };

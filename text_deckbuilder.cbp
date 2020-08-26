@@ -32,47 +32,38 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="Card.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="Card.cpp" />
 		<Unit filename="Card.h">
+			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="Enemy.cpp">
+		<Unit filename="Effect.cpp" />
+		<Unit filename="Effect.h">
+			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Enemy.cpp" />
 		<Unit filename="Enemy.h">
-			<Option compile="1" />
 			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="Event.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="Event.cpp" />
 		<Unit filename="Event.h">
+			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="Game.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="Game.cpp" />
 		<Unit filename="Game.h">
-			<Option compile="1" />
 			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="Player.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="Player.cpp" />
 		<Unit filename="Player.h">
-			<Option compile="1" />
 			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="Relic.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="Relic.cpp" />
 		<Unit filename="Relic.h">
-			<Option compile="1" />
 			<Option link="1" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>

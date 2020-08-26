@@ -1,13 +1,14 @@
 #include "Card.h"
 #include "Relic.h"
+#include "Effect.h"
 
 #include "Player.h"
 
 #include<vector>
 #include<string>
-#include <algorithm>
-#include <random>
-#include <iostream>
+#include<algorithm>
+#include<random>
+#include<iostream>
 using namespace std;
 
 Player::Player()
@@ -90,14 +91,59 @@ void Player::draw_cards() {
                 draw_pile.push_back(discard_pile[j]);
             }
             discard_pile.clear();
-            std::random_shuffle(draw_pile.begin(), draw_pile.end());
+            auto rng = std::default_random_engine {};
+            std::shuffle(std::begin(draw_pile), std::end(draw_pile), rng);
         }
     }
 }
 
 void Player::take_damage(int dmg) {
+    int dmgMitigated = 0;
+    vector<int> remove_eff;
+    for(int i = 0; i < effects.size(); i++) { //account for any effects that might change dmg dealt
+        if(effects[i]->name == "armor") {
+            effects[i]->magnitude-=dmg;
+            if(effects[i]->magnitude > 0) {
+                dmgMitigated = dmg;
+            } else if(effects[i]->magnitude == 0) {
+                dmgMitigated = dmg;
+                remove_eff.push_back(i);
+            } else if(effects[i]->magnitude < 0) {
+                dmgMitigated = effects[i]->magnitude+dmg; //add back to get pre-dmg magnitude
+                remove_eff.push_back(i);
+            }
+        }
+    }
+    for(int x : remove_eff) { //remove all effects that have been "used up"
+        effects.erase(effects.begin() + x);
+    }
+
+    dmg-=dmgMitigated;
+
     hp-=dmg;
+    cout << "You took " << dmg << " damage." << endl;
+
     if(hp < 0) {
         hp = 0;
+    }
+}
+
+void Player::add_to_coins(int n) {
+    coins+=n;
+    cout << "You gained " << n << " coins." << endl;
+}
+
+void Player::add_effect(string name, int magnitude) {
+    Effect *eff = new Effect();
+    eff->init(name, magnitude);
+    bool alreadyContains = false;
+    for(Effect *e : effects) {
+        if(e->name == eff->name) {
+            e->magnitude += eff->magnitude;
+            alreadyContains = true;
+        }
+    }
+    if(!alreadyContains) {
+        effects.push_back(eff);
     }
 }

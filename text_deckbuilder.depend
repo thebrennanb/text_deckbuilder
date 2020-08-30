@@ -175,7 +175,7 @@
 	<string>
 	<time.h>
 
-1598245561 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.h
+1598750444 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.h
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
@@ -184,7 +184,7 @@
 	<map>
 	<string>
 
-1598133614 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.h
+1598773288 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.h
 	"Card.h"
 	"Relic.h"
 	"Effect.h"
@@ -192,7 +192,7 @@
 	<string>
 	<map>
 
-1598132064 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\card.h
+1598730422 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\card.h
 	<string>
 	<vector>
 
@@ -200,13 +200,13 @@
 	<string>
 	<vector>
 
-1598129501 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.h
+1598595789 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.h
 	"Card.h"
 	"Effect.h"
 	<string>
 	<vector>
 
-1598400852 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.h
+1598742447 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.h
 	"Enemy.h"
 	<vector>
 	<string>
@@ -221,18 +221,20 @@
 	<map>
 	<string>
 
-1597775761 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\card.cpp
+1598777690 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\card.cpp
 	"Card.h"
 	<string>
 	<vector>
+	<iostream>
 
-1598138000 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.cpp
+1598595754 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.cpp
 	<string>
 	<vector>
 	"Enemy.h"
 	<iostream>
+	"Effect.h"
 
-1598400910 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.cpp
+1598750259 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.cpp
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
@@ -240,7 +242,7 @@
 	"Event.h"
 	<iostream>
 
-1598135699 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.cpp
+1598776520 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.cpp
 	"Card.h"
 	"Relic.h"
 	"Effect.h"
@@ -256,7 +258,7 @@
 	<string>
 	<vector>
 
-1598402286 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.cpp
+1598777792 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.cpp
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
@@ -269,13 +271,13 @@
 	<iostream>
 	<algorithm>
 
-1598132663 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.h
+1598772120 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.h
 	"Card.h"
 	"Effect.h"
 	<string>
 	<vector>
 
-1598134379 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.cpp
+1598772174 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.cpp
 	"Player.h"
 	"Enemy.h"
 	"Effect.h"

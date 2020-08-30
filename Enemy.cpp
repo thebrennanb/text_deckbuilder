@@ -2,6 +2,7 @@
 #include<vector>
 #include "Enemy.h"
 #include<iostream>
+#include "Effect.h"
 using namespace std;
 
 Enemy::Enemy()
@@ -36,5 +37,20 @@ void Enemy::take_damage(int dmg) {
     hp -= dmg;
     if(hp < 0) {
         hp = 0;
+    }
+}
+
+void Enemy::add_effect(string name, int magnitude) {
+    Effect *eff = new Effect();
+    eff->init(name, magnitude);
+    bool alreadyContains = false;
+    for(Effect *e : effects) {
+        if(e->name == eff->name) {
+            e->magnitude += eff->magnitude;
+            alreadyContains = true;
+        }
+    }
+    if(!alreadyContains) {
+        effects.push_back(eff);
     }
 }

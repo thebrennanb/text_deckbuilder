@@ -13,11 +13,12 @@ public:
     ~Effect();
 
     void init(string name, int magnitude);
-    void init_armor();
+    void init_effect(string n);
     string name;
     int magnitude;
     bool single_turn;
     bool lasting;
     bool decrements;
+    bool is_good;
 
 };

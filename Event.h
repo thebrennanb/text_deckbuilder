@@ -38,6 +38,8 @@ public:
     bool chance_offer(Player *p);
     bool get_treasure(Player *p);
     bool boss_reward(Player *p);
+    void display_enemies();
+    void check_dead();
 
     bool all_dead();
     void skip();

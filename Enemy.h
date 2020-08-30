@@ -25,4 +25,6 @@ public:             // Access specifier
     void increment_card_pos();
     void take_damage(int dmg);
 
+    void add_effect(string name, int magnitude);
+
 };

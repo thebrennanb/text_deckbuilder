@@ -20,10 +20,8 @@ public:             // Access specifier
     void init();
 
     //map constants
-    int num_events = 20;
+    int num_events = 40;
     int max_events_per_row = 6;
-    //int max_events_per_row = 1; //DEBUG
-    //
 
     Player *player = new Player();
     bool playerQuit = false;
@@ -41,14 +39,14 @@ public:             // Access specifier
     void play_map();
     void display_map();
     void inc_player_effects();
-    void inc_enemy_effects();
+    void inc_enemy_effects(Event* ev);
+
+    int calc_damage_players_attack(int dmg);
+    int calc_damage_enemy_attack(int dmg, int idx); //idx = index of enemy who used attack
 
     //events
+    void do_event(Event* ev);
     void combat();
-    void bonfire();
-    void enemy_battle();
-    void elite_enemy_battle();
-    void boss_battle();
 
     map<int, string> event_chances;
 

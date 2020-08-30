@@ -71,6 +71,12 @@ void Game::init_event_map() {
 
         string eventName;
         int randNum = rand()%(maxim-minim+1) + minim;
+        int rand2 = rand()%(3); //0 to 2
+        if(randNum >= max_events_per_row-2 && randNum != numLastRow-1) {
+            if(rand2 == 0) { //1/3 chance
+                randNum-=1;
+            }
+        }
         for(int j = 0; j < randNum; j++) { //add this many events on this row.
             Event *event2 = new Event();
 
@@ -165,16 +171,16 @@ void Game::init_event_map() {
     for(int i = 1; i < event_map.size()-1; i++) { //thru rows
         vector<Event*> ev;
         for(int j = 0; j < event_map[i].size(); j++) { //go thru all on row
-            //PUT THIS BACK IN THIS NEEDS TO GO IN
-            /*if(event_map[i][j]->lower_events.size() == 3) { //remove 2 of the 3
+            if(event_map[i][j]->lower_events.size() == 3) { //remove 2 of the 3
                 randNum = rand()%(3); //0 to 2
                 event_map[i][j]->lower_events.erase(event_map[i][j]->lower_events.begin() + randNum);
+                //cout << event_map[i][j]->lower_events.size() << endl;
 
-                if(event_map[i].size() > event_map[i-1].size()) { //only remove a second one if the diff b/w the rows is <
+                /*if(event_map[i].size() > event_map[i-1].size()) { //only remove a second one if the diff b/w the rows is <
                     randNum = rand()%(2); //0 to 1
                     event_map[i][j]->lower_events.erase(event_map[i][j]->lower_events.begin() + randNum);
-                }
-            } else if(event_map[i][j]->lower_events.size() == 2) { //else if event contains 2 lower events
+                }*/
+            }/* else if(event_map[i][j]->lower_events.size() == 2) { //else if event contains 2 lower events
                 if(j != 0 && j != event_map[i].size()-1) { //index of current event is not on l/r edge
                     randNum = rand()%(3);
                     if(randNum < event_map[i][j]->lower_events.size()) { //gives a 2/3 chance to remove
@@ -194,8 +200,8 @@ void Game::init_event_map() {
                         }
                     }
                 }
-            }
-            */
+            }*/
+
 
             //Go thru all lower connections
             for(int a = 0; a < event_map[i][j]->lower_events.size(); a++) {
@@ -206,12 +212,17 @@ void Game::init_event_map() {
         for(int c = 0; c < event_map[i].size(); c++) {
             for(int v = 0; v < event_map[i][c]->lower_events.size(); v++) {
                 //cout << i << " " << c << " " << v << " " << event_map[i][c]->lower_events[v]->classif << " count: " << count(ev.begin(), ev.end(), event_map[i][c]->lower_events[v]) << endl;
-                if(count(ev.begin(), ev.end(), event_map[i][c]->lower_events[v]) > 1 && event_map[i][c]->lower_events.size() != 1) {
+                int cnt = count(ev.begin(), ev.end(), event_map[i][c]->lower_events[v]);
+                if(cnt > 1 && event_map[i][c]->lower_events.size() != 1) {
                     //^if count of this event are in the vector > 1:
                     int randNum = rand()%(2); //either 0 or 1
                     //cout << "looking at " << i << " " << c << " " << v << " (" << event_map[i][c]->lower_events[v]->classif << ")" << endl;
-                    if(randNum == 1) { //50/50 chance
+
+                    if(randNum == 1 || cnt == 3) { //50/50 chance
                         //cout << "removing " << i << " " << c << " " << v << " (" << event_map[i][c]->lower_events[v]->classif << ")" << endl;
+                        /*if(event_map[i].size() == event_map[i-1].size() && (c == event_map[i-1].size()-1 || c == 0)) {
+                            cout << i << " " << c << " " << randNum << " " << cnt << endl;
+                        }*/
                         ev.erase(std::remove(ev.begin(), ev.end(), event_map[i][c]->lower_events[v]), ev.end());
                         event_map[i][c]->lower_events.erase(event_map[i][c]->lower_events.begin() + v);
                         v = -1; //reset for safety
@@ -221,28 +232,6 @@ void Game::init_event_map() {
 
             }
         }
-    }
-}
-
-
-void Game::display_enemies() {
-    int x = player_location.first;
-    int y = player_location.second;
-
-    for(int i = 0; i < event_map[x][y]->curr_enemies.size(); i++) {
-        cout << i << "  " << event_map[x][y]->curr_enemies[i]->name << ", hp=" <<event_map[x][y]->curr_enemies[i]->hp << endl;
-        if(!event_map[x][y]->curr_enemies[i]->is_dead())  {
-           cout << "Attacks: ";
-            for(int j = 0; j < event_map[x][y]->curr_enemies[i]->attacks.size(); j++) {
-                if(j != event_map[x][y]->curr_enemies[i]->attacks.size()-1) {
-                    cout << event_map[x][y]->curr_enemies[i]->attacks[j]->name << " (damage=" << event_map[x][y]->curr_enemies[i]->attacks[j]->damage << "), ";
-                } else {
-                    cout << event_map[x][y]->curr_enemies[i]->attacks[j]->name << " (damage=" << event_map[x][y]->curr_enemies[i]->attacks[j]->damage << ")." << endl;
-                }
-            }
-            cout << event_map[x][y]->curr_enemies[i]->name << " intends to use " << event_map[x][y]->curr_enemies[i]->attacks[event_map[x][y]->curr_enemies[i]->card_pos]->name << endl;
-        }
-        cout << endl;
     }
 }
 
@@ -265,15 +254,15 @@ void Game::init() {
     event_conv.insert(make_pair("enemy", 'e'));
     event_conv.insert(make_pair("elite enemy", 'E'));
     event_conv.insert(make_pair("bonfire", 'f'));
-    event_conv.insert(make_pair("shop", 's'));
-    event_conv.insert(make_pair("chance", 'c'));
+    event_conv.insert(make_pair("shop", '$'));
+    event_conv.insert(make_pair("chance", '?'));
     event_conv.insert(make_pair("treasure", 't'));
     event_conv.insert(make_pair("boss", 'B'));
     event_conv.insert(make_pair("start", '^'));
 }
 
 void Game::play_map() {
-    while(!end_game && !playerQuit && player_location.first != event_map.size()-1) {
+    while(!end_game && !playerQuit && player_location.second != event_map.size()-1) {
         display_map();
         string direction;
         cout << "Where will you go? ";
@@ -281,90 +270,84 @@ void Game::play_map() {
         vector<string> ok;
         int x = player_location.first;
         int y = player_location.second;
-        int sizeDiff = event_map[y+1].size()-event_map[x].size(); //will be either -1, 0, or 1
-        if(event_map[y+1].size() > 1) {
-            for(int i = 0; i < event_map[y+1].size(); i++) { //go thru the row above player
-                for(int j = 0; j < event_map[y+1][i]->lower_events.size(); j++) {
-                    if(event_map[y+1][i]->lower_events[j] == event_map[x][y]) {
-                        cout << i << " " << x << endl;
-                        if(event_map[y+1].size() == event_map[y].size()) { //rows are the same length
-                            if(i == x) {
-                                build += "u/";
-                                ok.push_back("u");
-                            } else if(i == x-1){
-                                build += "l/";
-                                ok.push_back("l");
-                            } else {
-                                build += "r/";
-                                ok.push_back("r");
-                            }
-
-                        }
-                        else if(event_map[y+1].size() > event_map[y].size()){ //row above > this row
-                            if(i == x) { //offset 1
-                                build += "r/";
-                                ok.push_back("r");
-                            } else {
-                                build += "l/";
-                                ok.push_back("l");
-                            }
-                        }
-                        else { //row above < this row
-                            if(i == x) { //offset -1
-                                build += "l/";
-                                ok.push_back("l");
-                            } else {
-                                build += "r/";
-                                ok.push_back("r");
-                            }
-
+        int sizeDiff = event_map[y+1].size()-event_map[y].size(); //will be either -1, 0, or 1
+        //cout << "Player coord: " << x << "," << y << endl;
+        for(int i = 0; i < event_map[y+1].size(); i++) { //go thru the row above player
+            for(int j = 0; j < event_map[y+1][i]->lower_events.size(); j++) {
+                if(event_map[y+1][i]->lower_events[j] == event_map[y][x]) {
+                    //cout << "i -> x: " << i << " " << x << endl;
+                    if(event_map[y+1].size() == event_map[y].size()) { //rows are the same length
+                        cout << "Looking" << endl; //TRYING TO FIGURE OUT WHY HAS A R BUT NO LINE TO IT TODO
+                        if(i == x) {
+                            build += "u/";
+                            ok.push_back("u");
+                        } else if(i == x-1){
+                            build += "l/";
+                            ok.push_back("l");
+                        } else {
+                            cout << i << " " << x << endl;
+                            build += "r/";
+                            ok.push_back("r");
                         }
                     }
+                    else if(event_map[y+1].size() > event_map[y].size()){ //row above > this row
+                        if(i == x) { //offset 1
+                            build += "l/";
+                            ok.push_back("l");
+                        } else {
+                            build += "r/";
+                            ok.push_back("r");
+                        }
+                    }
+                    else { //row above < this row
+                        if(i == x) { //offset -1
+                            build += "r/";
+                            ok.push_back("r");
+                        } else {
+                            build += "l/";
+                            ok.push_back("l");
+                        }
 
+                    }
                 }
+
             }
         }
+
         cout << "(" << build.substr(0,build.size()-1) << ")" << endl;
         while(1) {
             cin >> direction;
+            if(direction == "me") {
+                display_player();
+                cin >> direction;
+            }
             if(!(std::find(ok.begin(), ok.end(), direction) != ok.end()) && direction != "skip") {
                 cout << "Choose a direction." << endl;
             } else {
-                cout << player_location.second << " ";
+                //cout << player_location.first << " sizediff: " << sizeDiff << endl;
                 if(direction == "r") {
                     if(sizeDiff != -1) {
-                        player_location.second++;
+                        player_location.first++;
                     }
 
                 } else if(direction == "l") {
                     if(sizeDiff != 1) {
-                        player_location.second--;
+                        player_location.first--;
                     }
                 }
-                cout << player_location.second << endl;
+                //cout << player_location.first << "," << player_location.second << endl;
                 break;
             }
         }
         if(direction != "skip") { //add master control "skip" that allows you to skip a room.
 
-        player_location.first++;
-        cout << "Event: " << event_map[player_location.first][player_location.second]->classif << "\n" << endl;
-        if(event_map[player_location.first][player_location.second]->is_enemy) { //if it is a fight, initiate combat
-            enemy_battle();
-        }
-        else if(event_map[player_location.first][player_location.second]->is_elite_enemy) { //bonfire
-            elite_enemy_battle();
-        }
-        else if(event_map[player_location.first][player_location.second]->is_boss) { //bonfire
-            boss_battle();
-        }
-        else if(event_map[player_location.first][player_location.second]->is_bonfire) { //bonfire
-            bonfire();
-        }
+        player_location.second++;
+        do_event(event_map[player_location.second][player_location.first]);
+        //cout << "Event: " << event_map[player_location.second][player_location.first]->classif << "\n" << endl;
 
 
         } else { //was skip - move up one floor
-            player_location.first++;
+            player_location.second++;
         }
     }
 
@@ -375,9 +358,9 @@ void Game::display_map() {
     int spB = 24; //1: 24 -event- 24 for one event    -- (spaces between)
     string spaces = "                        "; //24 spaces
     for(int i = event_map.size()-1; i >=0; i--) { //thru col
-        if(event_map[i].size() == 5) {
+        /*if(event_map[i].size() == 5) {
             cout << "";
-        }
+        }*/
         for(int j = 0; j < event_map[i].size(); j++) { //thru row
             if(i == 0 || i == event_map.size()-1) {
                 cout << "                     ";
@@ -389,7 +372,7 @@ void Game::display_map() {
                 }
 
             }
-            if(i == player_location.first && j == player_location.second) { //player location
+            if(i == player_location.second && j == player_location.first) { //player location
                 cout << "Y";
             } else {
                 cout << event_conv.find(event_map[i][j]->classif)->second;
@@ -405,9 +388,9 @@ void Game::display_map() {
                 excessChars = 5;
             }
             string build = "";
-            if(event_map[i].size() == 5) {
+            /*if(event_map[i].size() == 5) { //taken care of by later statement
                 cout << " ";
-            }
+            }*/
             if(event_map[i-1].size() == event_map[i].size()) { //same number of events
                 for(int j = 0; j < event_map[i].size(); j++) {
                     if(event_map[i].size() == 5) {
@@ -456,6 +439,7 @@ void Game::display_map() {
                     //build+=to_string(sz);
                 }
             } else if(event_map[i].size() > event_map[i-1].size()) {
+                bool alreadyUsed = false;
                 for(int j = 0; j < event_map[i].size(); j++) {
                     if(event_map[i].size() == 5) {
                         excessChars--;
@@ -472,6 +456,9 @@ void Game::display_map() {
                     }
                     else {
                         if(sz == 1) {
+                            if(event_map[i][j]->lower_events[0] == event_map[i-1][j-1] && event_map[i][j]->lower_events[0] == event_map[i-1][j]) {
+                                excessChars++;
+                            }
                             if(event_map[i][j]->lower_events[0] == event_map[i-1][j-1]) { //down left
                                 //build = build.substr(0, build.size()-1);
                                 build+="/";
@@ -490,7 +477,7 @@ void Game::display_map() {
 
                 }
 
-            } else if(event_map[i].size() < event_map[i-1].size()) { //I AM NOT SURE IF THIS ONE IS RIGHT
+            } else if(event_map[i].size() < event_map[i-1].size()) { //THE SPACING IS WRONG
 
                 for(int j = 0; j < event_map[i].size(); j++) {
                     if(event_map[i].size() == 5) {
@@ -506,11 +493,11 @@ void Game::display_map() {
                     if(sz == 1) {
                         if(j != 0 && j != event_map[i].size()-1) {
                             if(event_map[i][j]->lower_events[0] == event_map[i-1][j]) {
-                                build = build.substr(0, build.size()-1);
+                                //build = build.substr(0, build.size()-1);
                                 build+="/";
                             } else {
                                 build+="\\";
-                                //excessChars++;
+                                excessChars++;
                             }
                         }
                     }
@@ -521,6 +508,9 @@ void Game::display_map() {
                             build = build.substr(0, build.size()-1);
                             build+="/";
                         } else {
+                            if(j != event_map[i].size()/2 || j%2 == 1) {
+                                build = build.substr(0, build.size()-1);
+                            }
                             build+="/\\";
                         }
                     }
@@ -540,42 +530,50 @@ void Game::display_map() {
 
 
 //event stuff
-void Game::bonfire() {
-    int restoredHp = player->max_hp/2;
-    player->hp += player->max_hp/2; //add half of max hp back
-    if(player->hp > player->max_hp) {
-        restoredHp -= player->hp-player->max_hp;
-        player->hp = player->max_hp;
+void Game::do_event(Event* ev) {
+    if(ev->is_bonfire) {
+        int restoredHp = player->max_hp/3;
+        player->hp += player->max_hp/3; //add 1/3 of max hp back
+        if(player->hp > player->max_hp) {
+            restoredHp -= player->hp-player->max_hp;
+            player->hp = player->max_hp;
+        }
+        cout << "You rest at the bonfire. Restored " << restoredHp << " hp. (hp=" << player->hp << ")\n" << endl;
     }
-    cout << "You rest at the bonfire. Restored " << restoredHp << " hp. (hp=" << player->hp << ")\n" << endl;
-}
-
-void Game::enemy_battle() {
-    event_map[player_location.first][player_location.second]->init_enemies();
-    combat();
-    if(!playerQuit && !player->isDead()) {
-        event_map[player_location.first][player_location.second]->enemy_reward(player);
+    else if(event_map[player_location.second][player_location.first]->is_enemy) { //if it is a fight, initiate combat
+        event_map[player_location.second][player_location.first]->init_enemies();
+        combat();
+        if(!playerQuit && !player->isDead()) {
+            event_map[player_location.second][player_location.first]->enemy_reward(player);
+        }
     }
-}
-
-void Game::elite_enemy_battle() {
-    event_map[player_location.first][player_location.second]->init_elite_enemies();
-    combat();
-    if(!playerQuit && !player->isDead()) {
-        event_map[player_location.first][player_location.second]->elite_enemy_reward(player);
+    else if(event_map[player_location.second][player_location.first]->is_elite_enemy) {
+        event_map[player_location.second][player_location.first]->init_elite_enemies();
+        combat();
+        if(!playerQuit && !player->isDead()) {
+            event_map[player_location.second][player_location.first]->elite_enemy_reward(player);
+        }
     }
-}
-
-void Game::boss_battle() {
-    event_map[player_location.first][player_location.second]->init_boss();
-    combat();
-    if(!playerQuit && !player->isDead()) {
-        event_map[player_location.first][player_location.second]->boss_reward(player);
+    else if(event_map[player_location.second][player_location.first]->is_boss) {
+        event_map[player_location.second][player_location.first]->init_boss();
+        combat();
+        if(!playerQuit && !player->isDead()) {
+            event_map[player_location.second][player_location.first]->boss_reward(player);
+        }
+    }
+    else if(event_map[player_location.second][player_location.first]->is_chance) {
+        ev->chance_offer(player);
+    }
+    else if(event_map[player_location.second][player_location.first]->is_treasure) {
+        ev->get_treasure(player);
+    }
+    else if(event_map[player_location.second][player_location.first]->is_shop) {
+        ev->shop_offer(player);
     }
 }
 
 void Game::combat() {
-    player->target_enemy = -1;
+    player->target = -2;
     player->init_deck_before_combat();
     while(1) {
 
@@ -594,12 +592,12 @@ void Game::combat() {
             break;
         }
 
-        if(event_map[player_location.first][player_location.second]->all_dead()) {
+        if(event_map[player_location.second][player_location.first]->all_dead()) {
             cout << "You won this battle!" << endl;
             break;
         }
 
-        inc_enemy_effects();
+        inc_enemy_effects(event_map[player_location.second][player_location.first]);
 
         play_enemy_turn();
 
@@ -609,6 +607,7 @@ void Game::combat() {
             break;
         }
     }
+    player->clear_effects();
 }
 
 void Game::play_player_turn() {
@@ -619,7 +618,7 @@ void Game::play_player_turn() {
 
     bool endTurn = false;
     while(!endTurn) {
-        display_enemies();
+        event_map[y][x]->display_enemies();
         player->display_hand();
         cout << "\nStamina left: " << player->stamina << ", hp left: " << player->hp << ". What will you do?" << endl;
         bool madeAction = false;
@@ -637,7 +636,7 @@ void Game::play_player_turn() {
             } else {
                 if(input.size() == 1) { //all inputs with 1 word
                     if(input[0] == "cheatskip") {
-                        event_map[x][y]->skip();
+                        event_map[y][x]->skip();
                         madeAction = true;
                         endTurn = true;
                     }
@@ -649,9 +648,9 @@ void Game::play_player_turn() {
                         endTurn = true;
                         cout << "You quit." << endl;
                     } else if(input[0] == "me") {
-                        this->display_player();
+                        display_player();
                     } else if(input[0] == "enemies") {
-                        this->display_enemies();
+                        event_map[y][x]->display_enemies();
                     } else {
                         cout << "Could not understand." << endl;
                     }
@@ -661,11 +660,16 @@ void Game::play_player_turn() {
                         endTurn = true;
                         cout << "Completed turn\n" << endl;
                     } else if(input[0] == "target") {
-                        if(stoi(input[1]) >= event_map[x][y]->curr_enemies.size()) {
-                            cout << "Choose an existing enemy." << endl;
+                        if(input[1] == "self") {
+                            player->target = -1;
+                            cout << "Setting target: self.";
                         } else {
-                            player->target_enemy = stoi(input[1]);
-                            cout << "Setting target enemy: " << event_map[x][y]->curr_enemies[stoi(input[1])]->name << endl;
+                            if(stoi(input[1]) >= event_map[y][x]->curr_enemies.size()) {
+                                cout << "Choose an existing enemy." << endl;
+                            } else {
+                                player->target = stoi(input[1]);
+                                cout << "Setting target enemy: " << event_map[y][x]->curr_enemies[stoi(input[1])]->name;
+                            }
                         }
                     } else if(input[0] == "draw" && input[1] == "pile") {
                        player->display_draw_pile();
@@ -682,9 +686,10 @@ void Game::play_player_turn() {
                     } else if(input[0] == "card") { //play card
                         if(stoi(input[1]) >= player->hand.size()) { //card does not exist.
                             cout << "Card does not exist." << endl;
-                        } else if(player->target_enemy == -1) {
-                            cout << "Set a target enemy first." << endl;
-                        } else if(player->stamina-player->hand[stoi(input[1])]->stamina_cost < 0) { //not enough energy
+                        } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {
+                            cout << "Set a target first." << endl;
+                        } else if(player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
+
                             cout << "Not enough stamina." << endl;
                         } else {
                             madeAction = true;
@@ -692,7 +697,8 @@ void Game::play_player_turn() {
                             //play card and do effects and stuff here
                             play_card(stoi(input[1]));
                             //
-                            if(event_map[x][y]->all_dead()) {
+                            event_map[y][x]->check_dead();
+                            if(event_map[y][x]->all_dead()) {
                                 endTurn = true;
                                 break;
                             }
@@ -710,55 +716,224 @@ void Game::play_player_turn() {
             }
         }
     }
+    player->return_hand();
     //will print if player quit.
 }
 
 void Game::play_card(int idx) {
+    //CHANGE
     int x = player_location.first;
     int y = player_location.second;
-    player->stamina-=player->hand[idx]->stamina_cost; //subtract stamina cost from playing
-    cout << "Played " << player->hand[idx]->name << endl;
-    if(player->hand[idx]->target == "single enemy") {
-        event_map[x][y]->curr_enemies[player->target_enemy]->take_damage(player->hand[idx]->damage);
-    } else if(player->hand[idx]->target == "self") { //played on self.
-        player->add_effect(player->hand[idx]->effect_applied, player->hand[idx]->effect_magnitude);
-        if(player->hand[idx]->damage != 0) {
-            player->take_damage(player->hand[idx]->damage);
+
+    //format: name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
+    vector<vector<string>> does = player->hand[idx]->split();
+    string name = does[0][0];
+    string description = does[0][1];
+    string classification = does[0][2];
+    int stamina_cost = stoi(does[0][3]);
+    player->stamina-=stamina_cost; //subtract stamina cost from playing card
+    cout << "Played " << name << endl;
+
+    for(int i = 1; i < does.size(); i++) {
+        bool isX;
+        if(does[i][2] == "X") {
+            isX = true;
+        }
+        if(does[i][3] == "choose") {
+            if(player->target == -1) { //player targeting self
+
+            }
+            else { //targeting enemy
+                event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                if(does[i][0] != "none") {
+                    event_map[y][x]->curr_enemies[player->target]->add_effect(does[i][0], stoi(does[i][1]));
+                }
+            }
+
+        } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
+            //do not calculate damage, this damage to self from cards. Bypasses effects like block, weak, frail, rage, etc.
+            if(does[i][0] != "none") {
+                player->add_effect(does[i][0], stoi(does[i][1]));
+            }
+            if(stoi(does[i][2]) != 0) {
+                player->take_damage(stoi(does[i][2])); //ignore players attack?
+            }
+
+        } else if(does[i][3] == "all enemies") {
+            for(int a = 0; a < event_map[y][x]->curr_enemies.size(); a++) {
+                event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                if(does[i][0] != "none") {
+                    event_map[y][x]->curr_enemies[a]->add_effect(does[i][0], stoi(does[i][1]));
+                }
+            }
+        } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
+            event_map[y][x]->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+            if(does[i][0] != "none") {
+                event_map[y][x]->curr_enemies[0]->add_effect(does[i][0], stoi(does[i][1]));
+            }
+        }
+    }
+}
+int Game::calc_damage_players_attack(int dmg) { //will currently not work for a player targeting self
+    if(dmg == 0) { //Not always the case; maybe relic or card played makes all cards played deal x damage
+        return 0;
+    }
+    int x = player_location.first;
+    int y = player_location.second;
+
+    for(int i = 0; i < player->effects.size(); i++) { //go thru player effects
+        if(player->effects[i]->name == "rage") {
+            dmg+=player->effects[i]->magnitude;
+        }
+        if(player->effects[i]->name == "weak") {
+            dmg-=player->effects[i]->magnitude;
         }
     }
 
+    if(player->target != -1) { //targeting enemy - factor in enemy effects
+        for(int i = 0; i < event_map[y][x]->curr_enemies[player->target]->effects.size(); i++) { //go thru effects
+            if(event_map[y][x]->curr_enemies[player->target]->effects[i]->name == "vulnerable") {
+                dmg+=event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude;
+            }
+
+            if(event_map[y][x]->curr_enemies[player->target]->effects[i]->name == "armor") {
+                int dmgMitigated = 0;
+                event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude-=dmg;
+                if(event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude > 0) {
+                    dmgMitigated = dmg;
+                } else if(event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude == 0) {
+                    dmgMitigated = dmg;
+                    event_map[y][x]->curr_enemies[player->target]->effects.erase(event_map[y][x]->curr_enemies[player->target]->effects.begin()+i);
+                    i--;
+                } else if(event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude < 0) {
+                    dmgMitigated = event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude+dmg; //add back to get pre-dmg magnitude
+                    event_map[y][x]->curr_enemies[player->target]->effects.erase(event_map[y][x]->curr_enemies[player->target]->effects.begin()+i);
+                    i--;
+                }
+                dmg-=dmgMitigated;
+            }
+        }
+    }
+
+    if(dmg < 0) {
+        dmg = 0;
+    }
+    return dmg;
 }
+
 
 void Game::play_enemy_turn() {
     int x = player_location.first;
     int y = player_location.second;
 
-    for(int i = 0; i < event_map[x][y]->curr_enemies.size(); i++) {
-        if(!event_map[x][y]->curr_enemies[i]->is_dead()) {
-            cout << event_map[x][y]->curr_enemies[i]->name << " used " << event_map[x][y]->curr_enemies[i]->attacks[event_map[x][y]->curr_enemies[i]->card_pos]->name << "." << endl;
-            if(!event_map[x][y]->curr_enemies[i]->attacks[event_map[x][y]->curr_enemies[i]->card_pos]->damage == 0) {
-                player->take_damage(event_map[x][y]->curr_enemies[i]->attacks[event_map[x][y]->curr_enemies[i]->card_pos]->damage);
+    for(int i = 0; i < event_map[y][x]->curr_enemies.size(); i++) {
+        if(!event_map[y][x]->curr_enemies[i]->is_dead()) {
+            vector<vector<string>> does = event_map[y][x]->curr_enemies[i]->attacks[event_map[y][x]->curr_enemies[i]->card_pos]->split();
+            string name = does[0][0];
+            cout << event_map[y][x]->curr_enemies[i]->name << " used " << name << "." << endl;
+
+            for(int a = 1; a < does.size(); a++) {
+                if(does[a][3] == "player") { //enemy attacks player
+                    if(does[a][0] != "none") {
+                        player->add_effect(does[a][0], stoi(does[a][1]));
+                    }
+                    if(stoi(does[a][2]) != 0) {
+                        player->take_damage(calc_damage_enemy_attack(stoi(does[a][2]), i));
+                    }
+
+                } else if(does[a][3] == "self") { //enemy hits itself - this will only be with an effect.
+
+                    if(does[a][0] != "none") {
+                        event_map[y][x]->curr_enemies[i]->add_effect(does[a][0], stoi(does[a][1]));
+                    }
+                } else if(does[a][3] == "all enemies") {
+                    for(int b = 0; b < event_map[y][x]->curr_enemies.size(); b++) { //will only be effects
+
+                        if(does[a][0] != "none") {
+                            event_map[y][x]->curr_enemies[b]->add_effect(does[a][0], stoi(does[a][1]));
+                        }
+                    }
+                }
+
             }
-            event_map[x][y]->curr_enemies[i]->increment_card_pos();
+
+            event_map[y][x]->curr_enemies[i]->increment_card_pos();
         }
     }
 }
+int Game::calc_damage_enemy_attack(int dmg, int idx) { //enemy attacking player
+    if(dmg == 0) { //Not always the case; maybe relic or card played makes all cards played deal x damage
+        return 0;
+    }
+    int x = player_location.first;
+    int y = player_location.second;
 
-void Game::inc_enemy_effects() {
+    for(int i = 0; i < event_map[y][x]->curr_enemies[idx]->effects.size(); i++) { //go thru effects
+        if(event_map[y][x]->curr_enemies[idx]->effects[i]->name == "weak") {
+            dmg-=event_map[y][x]->curr_enemies[idx]->effects[i]->magnitude;
+        }
+        if(event_map[y][x]->curr_enemies[idx]->effects[i]->name == "rage") {
+            dmg+=event_map[y][x]->curr_enemies[idx]->effects[i]->magnitude;
+        }
+    }
 
+    for(int i = 0; i < player->effects.size(); i++) { //go thru effects
+
+        if(player->effects[i]->name == "armor") {
+            int dmgMitigated = 0;
+            player->effects[i]->magnitude-=dmg;
+            if(player->effects[i]->magnitude > 0) {
+                dmgMitigated = dmg;
+            } else if(player->effects[i]->magnitude == 0) {
+                dmgMitigated = dmg;
+                player->effects.erase(player->effects.begin()+i);
+                i--;
+            } else if(player->effects[i]->magnitude < 0) {
+                dmgMitigated = player->effects[i]->magnitude+dmg; //add back to get pre-dmg magnitude
+                player->effects.erase(player->effects.begin()+i);
+                i--;
+            }
+            dmg-=dmgMitigated;
+        }
+    }
+
+    if(dmg < 0) {
+        dmg = 0;
+    }
+    return dmg;
+}
+
+void Game::inc_enemy_effects(Event* ev) {
+    for(int en = 0; en < ev->curr_enemies.size(); en++) {
+        for(int i = 0; i < ev->curr_enemies[en]->effects.size(); i++) {
+            if(!ev->curr_enemies[en]->effects[i]->lasting) { //will nullify single turn or decrements (maybe case of relic??)
+                if(ev->curr_enemies[en]->effects[i]->decrements) {
+                    ev->curr_enemies[en]->effects[i]->magnitude--; //decrement this magnitude
+                    if(ev->curr_enemies[en]->effects[i]->magnitude == 0) {
+                        ev->curr_enemies[en]->effects.erase(ev->curr_enemies[en]->effects.begin()+i);
+                        i-=1; //safety
+                    }
+                } else if(ev->curr_enemies[en]->effects[i]->single_turn) {
+                    ev->curr_enemies[en]->effects.erase(ev->curr_enemies[en]->effects.begin()+i);
+                    i-=1; //safety
+                }
+            }
+        }
+    }
 }
 void Game::inc_player_effects() {
-    vector<int> removeArr;
     for(int i = 0; i < player->effects.size(); i++) {
         if(!player->effects[i]->lasting) { //will nullify single turn or decrements (maybe case of relic??)
             if(player->effects[i]->decrements) {
                 player->effects[i]->magnitude--; //decrement this magnitude
+                if(player->effects[i]->magnitude == 0) {
+                    player->effects.erase(player->effects.begin() + i); //remove this effect from the array entirely
+                    i-=1;
+                }
             } else if(player->effects[i]->single_turn) {
-                removeArr.push_back(i); //remove this effect from the array entirely
+                player->effects.erase(player->effects.begin() + i); //remove this effect from the array entirely
+                i-=1;
             }
         }
-    }
-    for(int i = 0; i < removeArr.size(); i++) {
-        player->effects.erase(player->effects.begin() + removeArr[i]);
     }
 }

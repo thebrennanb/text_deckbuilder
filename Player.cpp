@@ -30,9 +30,6 @@ void Player::init_deck() { //set initial cards
         card->init("Defend|Don 5 armor|Basic|1|;armor|5|0|self|;");
         deck.push_back(card);
     }
-    Card *card3 = new Card();
-    card3->init("Embolden|Give yourself 1 energy and 1 rage|Common|0|;rage|1|0|self|;stamina|1|0|self|;");
-    deck.push_back(card3);
     init_all_common_cards();
     init_all_rare_cards();
 }
@@ -62,6 +59,72 @@ bool Player::isDead() {
     return hp==0;
 }
 
+void Player::get_cards(int numGet, bool set_from_each, int num_common, int num_rare) {
+    int szC = common_cards.size();
+    int szR = rare_cards.size();
+    vector<int> cards_choose;
+    if(set_from_each) {
+        for(int i = 0; i < num_common; i++) {
+            int rn = rand()%(szC);
+            if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) { //already has this common card
+                i--;
+            } else {
+                cards_choose.push_back(rn);
+                deck.push_back(common_cards[rn]);
+                vector<vector<string>> does = common_cards[rn]->split();
+                cout << "Got 1 " << " (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
+            }
+        }
+        cards_choose.clear();
+        for(int i = 0; i < num_rare; i++) {
+            int rn = rand()%(szR);
+            if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) { //already has this rare card
+                i--;
+            } else {
+                cards_choose.push_back(rn);
+                deck.push_back(rare_cards[rn]);
+                vector<vector<string>> does = rare_cards[rn]->split();
+                cout << "Got 1 " << " (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
+            }
+        }
+
+    }
+    else {
+        vector<string> classifs;
+        for(int i = 0; i < numGet; i++) {
+            int randNum = rand()%(3);
+            if(randNum == 0) { // 1/3 chance to get rare card
+                int rn = rand()%(szR);
+                if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) { //you cannot get the same index rare and common card tho
+                    i--;
+                } else {
+                    cards_choose.push_back(rn);
+                    classifs.push_back("rare");
+                }
+            } else {
+                int rn = rand()%(szC);
+                if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) {
+                    i--;
+                } else {
+                    cards_choose.push_back(rn);
+                    classifs.push_back("common");
+                }
+            }
+        }
+        for(int j = 0; j < cards_choose.size(); j++) {
+            if(classifs[j] == "common") {
+                deck.push_back(common_cards[cards_choose[j]]);
+                vector<vector<string>> does = common_cards[cards_choose[j]]->split();
+                cout << "Got 1 " << " (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
+            } else if(classifs[j] == "rare") {
+                deck.push_back(rare_cards[cards_choose[j]]);
+                vector<vector<string>> does = rare_cards[cards_choose[j]]->split();
+                cout << "Got 1 " << " (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
+            }
+        }
+    }
+}
+
 void Player::get_card(int numGet, int numCards) {
     int szC = common_cards.size();
     int szR = rare_cards.size();
@@ -71,7 +134,7 @@ void Player::get_card(int numGet, int numCards) {
         int randNum = rand()%(3);
         if(randNum == 0) { // 1/3 chance to get rare card
             int rn = rand()%(szR);
-            if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) {
+            if(std::find(cards_choose.begin(), cards_choose.end(), rn) != cards_choose.end()) { //you cannot get the same index rare and common card tho
                 i--;
             } else {
                 cards_choose.push_back(rn);
@@ -91,13 +154,13 @@ void Player::get_card(int numGet, int numCards) {
         cout << "You can choose " << numGet << " more cards, or type skip to skip your remaining options." << endl;
         cout << "Card choices:" << endl;
         for(int j = 0; j < cards_choose.size(); j++) {
-            cout << "Printing cards" << endl;
+            //cout << "Printing cards" << endl;
             if(classifs[j] == "common") {
-                cout << common_cards[cards_choose[j]]->info << endl;
+                //cout << common_cards[cards_choose[j]]->info << endl;
                 vector<vector<string>> does = common_cards[cards_choose[j]]->split();
                 cout << j << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
             } else if(classifs[j] == "rare") {
-                cout << common_cards[cards_choose[j]]->info << endl;
+                //cout << rare_cards[cards_choose[j]]->info << endl;
                 vector<vector<string>> does = rare_cards[cards_choose[j]]->split();
                 cout << j << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--" << endl;
             }
@@ -216,6 +279,24 @@ void Player::add_effect(string name, int magnitude) {
             }
         }
         return;
+    } else if(name == "add_status_wound") {
+        for(int i = 0; i < magnitude; i++) { //TODO CHANGE THIS
+            Card *card = new Card();
+            card->init("Wound|Unplayable|Status|0|;none|0|0|self|;");
+            discard_pile.push_back(card);
+        }
+    } else if(name == "add_status_daze") { //TODO CHANGE THIS
+        for(int i = 0; i < magnitude; i++) {
+            Card *card = new Card();
+            card->init("Daze|Consume|Status|0|;consume|0|0|self|;");
+            discard_pile.push_back(card);
+        }
+    } else if(name == "add_status_bleed") { //TODO CHANGE THIS
+        for(int i = 0; i < magnitude; i++) {
+            Card *card = new Card();
+            card->init("Bleed|consume|Status|1|;consume|0|0|self|;end_turn_damage|3|0|self|;");
+            discard_pile.push_back(card);
+        }
     }
 
     int agilityAdd = 0;
@@ -224,25 +305,41 @@ void Player::add_effect(string name, int magnitude) {
             agilityAdd = effects[i]->magnitude;
         }
     }
-    cout << "agilityAdd: " << agilityAdd << endl;
+    if(name == "armor") {
+        magnitude+=agilityAdd; //add the bonus gained from agility
+    }
 
     Effect *eff = new Effect();
     eff->init(name, magnitude);
     bool alreadyContains = false;
     for(Effect *e : effects) {
         if(e->name == eff->name) {
-            if(e->name == "armor") {
-                e->magnitude += (eff->magnitude + agilityAdd); //add the bonus gained from agility
-                alreadyContains = true;
-            } else {
-                e->magnitude += eff->magnitude;
-                alreadyContains = true;
-            }
+            e->magnitude += eff->magnitude;
+            alreadyContains = true;
         }
     }
     if(!alreadyContains) {
         effects.push_back(eff);
     }
+}
+
+void Player::dec_magnitude(int idx) { //might change if relic: "effect x no longer decays
+    effects[idx]->magnitude--;
+}
+bool Player::erase_effect_single_turn(int idx) {
+    bool retain_armor = false;
+    for(int i = 0; i < effects.size(); i++) {
+        if(effects[i]->name == "retain_armor") {
+            retain_armor = true;
+        }
+    }
+    if(!(effects[idx]->name == "armor" && retain_armor)) { //if armor and retain armor don't erase it
+        return false;
+    }
+
+    //end: erase the effect.
+    effects.erase(effects.begin() + idx);
+    return true;
 }
 
 void Player::init_all_common_cards() {
@@ -269,14 +366,13 @@ void Player::init_all_common_cards() {
     common_cards.push_back(card4);
 
     Card *card5 = new Card();
-    card5->init("Ignite|Deal 9 damage|Common|2|;none|0|9|choose|;");
+    card5->init("Ignite|Deal 12 damage|Common|2|;none|0|9|choose|;");
     common_cards.push_back(card5);
 
     Card *card6 = new Card();
     card6->init("Feint|Gain 4 armor and 1 agility|Common|2|;armor|4|0|self|;agility|1|0|self|;");
     common_cards.push_back(card6);
 
-    //THERE IS A PROBLEM WITH PRINTING THIS CARD
     Card *card7 = new Card();
     card7->init("Reinforce|Gain 2 armor 3 times|Common|1|;armor|2|0|self|;armor|2|0|self|;armor|2|0|self|;");
     common_cards.push_back(card7);
@@ -304,18 +400,18 @@ void Player::init_all_common_cards() {
 
     Card *card13 = new Card();
     card13->init("Jab|Deal 3 damage|Common|0|;none|0|3|choose|;");
-    common_cards.push_back(card12);
+    common_cards.push_back(card13);
 
     Card *card14 = new Card();
     card14->init("War cry|Give yourself 5 rage and give all enemies 5 weak and 5 vulnerable|Common|3|;rage|5|0|self|;vulnerable|5|0|all enemies|;weak|5|0|all enemies|;");
     common_cards.push_back(card14);
 
     Card *card15 = new Card();
-    card15->init("What doesn't kill you|Take 5 damage and gain 5 rage|Common|1|;none|0|5|self|;rage|5|0|self|;");
+    card15->init("What doesn't kill you|Lose 5 hp and gain 5 rage|Common|1|;none|0|5|self|;rage|5|0|self|;");
     common_cards.push_back(card15);
 
     Card *card16 = new Card();
-    card16->init("Impenetrable armor|Retain your armor for 1 turn.|Common|1|;retain armor|1|0|self|;");
+    card16->init("Impenetrable armor|Retain your armor for 1 turn.|Common|1|;retain_armor|1|0|self|;");
     common_cards.push_back(card16);
 
     Card *card17 = new Card();
@@ -323,7 +419,7 @@ void Player::init_all_common_cards() {
     common_cards.push_back(card17);
 
     Card *card18 = new Card();
-    card18->init("Close combat|Deal 5 damage to the closest enemy X times.|Common|X|;none|0|5|closest enemy|;");
+    card18->init("Close combat|Deal 10 damage to the closest enemy X times.|Common|X|;none|0|10|closest enemy|;");
     common_cards.push_back(card18);
 
     Card *card19 = new Card();
@@ -340,8 +436,32 @@ void Player::init_all_common_cards() {
     common_cards.push_back(card21);
 
     Card *card22 = new Card();
-    card22->init("Grab|Deal 3 damage to the closest enemy and give it 2 vulnerable|Common|1|;none|0|3|closest enemy|;vulnerable|2|0|closest enemy|;");
+    card22->init("Grab|Deal 3 damage to the closest enemy and give it 2 vulnerable.|Common|1|;none|0|3|closest enemy|;vulnerable|2|0|closest enemy|;");
     common_cards.push_back(card22);
+
+    Card *card23 = new Card(); //conditional
+    card23->init("Spoils of war|If an enemy has died this turn, draw 2 cards and gain 100 coins.|Common|2|;draw|2|0|self|;coins|100|self|;");
+    common_cards.push_back(card23);
+
+    Card *card24 = new Card(); //conditional
+    card24->init("Siege|Give all enemies 2X weak and 2X vulnerable.|Common|X|;weak|2|0|all enemies|;vulnerable|2|0|;");
+    common_cards.push_back(card24);
+
+    Card *card25 = new Card();
+    card25->init("Layered armor|Gain 3X armor.|Common|X|;armor|3|0|self|;");
+    common_cards.push_back(card25);
+
+    Card *card26 = new Card();
+    card26->init("Reflexive dodge|Gain 5 armor and 1 stamina.|Common|0|;armor|5|0|self|;stamina|1|0|self|;");
+    common_cards.push_back(card26);
+
+    Card *card27 = new Card();
+    card27->init("Rouse|Take 2 damage and gain 1 stamina.|Common|0|;none|0|2|self|;stamina|1|0|self|;");
+    common_cards.push_back(card27);
+
+    Card *card28 = new Card();
+    card28->init("Prioritize|Gain 2 stamina and add 2 wounds to your discard pile.|Common|0|;add_status_wound|2|0|self|;stamina|2|0|self|;");
+    common_cards.push_back(card28);
 
 }
 void Player::init_all_rare_cards() {
@@ -366,7 +486,7 @@ void Player::init_all_rare_cards() {
     rare_cards.push_back(card3);
 
     Card *card4 = new Card();
-    card3->init("Taunt|Give all enemies 3 rage and 6 vulnerable.|Rare|1|;rage|3|0|all enemies|;vulnerable|6|0|all enemies|;");
+    card4->init("Taunt|Give all enemies 3 rage and 6 vulnerable.|Rare|1|;rage|3|0|all enemies|;vulnerable|6|0|all enemies|;");
     rare_cards.push_back(card4);
 
     Card *card5 = new Card();
@@ -378,7 +498,7 @@ void Player::init_all_rare_cards() {
     rare_cards.push_back(card6);
 
     Card *card101 = new Card(); //lmao whoops
-    card6->init("Be like water|Gain 5 rage and 3 agility.|Rare|2|;rage|5|0|self|;agility|3|0|self|;");
+    card101->init("Be like water|Gain 5 rage and 3 agility.|Rare|2|;rage|5|0|self|;agility|3|0|self|;");
     rare_cards.push_back(card101);
 
     Card *card7 = new Card();
@@ -406,10 +526,25 @@ void Player::init_all_rare_cards() {
     card12->init("Hard read|If the enemy intends to attack, gain 10 armor. Otherwise, deal 10 damage.|Rare|1|;armor|10|0|self|;none|0|10|choose|;");
     rare_cards.push_back(card12);
 
-    Card *card13 = new Card();
+    Card *card13 = new Card(); //conditional
     card13->init("Study opponent|If the enemy intends to attack, gain 2 armor and 1 retaliate. Otherwise, gain 2 rage and 1 agility.|Rare|0|;none|0|0|choose|;");
-
     rare_cards.push_back(card13);
+
+    Card *card14 = new Card();
+    card14->init("Calculated strike|Deal 10 damage and draw 1 card.|Rare|1|;draw|1|0|self|;none|0|10|choose|;");
+    rare_cards.push_back(card14);
+
+    Card *card15 = new Card();
+    card15->init("Blood deal|Lose 5 hp and gain 2 energy.|Rare|1|;stamina|2|0|self|;none|0|4|self|;");
+    rare_cards.push_back(card15);
+
+    Card *card16 = new Card();
+    card16->init("Cursed blood|Lose 5 hp and draw 3 cards.|Rare|1|;draw|3|0|self|;none|0|5|self|;");
+    rare_cards.push_back(card16);
+
+    Card *card17 = new Card();
+    card17->init("Safeguard|Retain your armor for 2 turns.|Common|3|;retain_armor|2|0|self|;");
+    common_cards.push_back(card17);
 
 
 }

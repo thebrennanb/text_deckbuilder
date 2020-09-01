@@ -40,9 +40,12 @@ public:             // Access specifier
     void display_map();
     void inc_player_effects();
     void inc_enemy_effects(Event* ev);
+    void player_choose_starting();
 
     int calc_damage_players_attack(int dmg);
     int calc_damage_enemy_attack(int dmg, int idx); //idx = index of enemy who used attack
+    void do_retaliate_enemy(Enemy* en);
+    void do_retaliate_player(Enemy* en);
 
     //events
     void do_event(Event* ev);

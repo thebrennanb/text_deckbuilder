@@ -35,9 +35,30 @@ void Enemy::increment_card_pos() {
 
 void Enemy::take_damage(int dmg) {
     hp -= dmg;
+    cout << name << " took " << dmg << " damage." << endl;
     if(hp < 0) {
         hp = 0;
     }
+}
+
+//Yeah I'll keep these 2 around, maybe case of relic poison?
+void Enemy::dec_magnitude(int idx) { //might change if relic: "effect x no longer decays
+    effects[idx]->magnitude--;
+}
+bool Enemy::erase_effect_single_turn(int idx) {
+    bool retain_armor = false;
+    for(int i = 0; i < effects.size(); i++) {
+        if(effects[i]->name == "retain armor") {
+            retain_armor = true;
+        }
+    }
+    if(!(effects[idx]->name == "armor" && retain_armor)) { //if armor and retain armor don't erase it
+        return false;
+    }
+
+    //end: erase the effect.
+    effects.erase(effects.begin() + idx);
+    return true;
 }
 
 void Enemy::add_effect(string name, int magnitude) {

@@ -36,6 +36,7 @@ public:             // Access specifier
     bool isDead();
     void take_damage(int dmg);
     void get_card(int numGet, int numCards);
+    void get_cards(int numGet, bool set_from_each, int num_common, int num_rare);
     void return_hand();
     void clear_effects();
 
@@ -48,6 +49,9 @@ public:             // Access specifier
     void round_start();
     void add_to_coins(int n);
     void add_effect(string name, int magnitude);
+    void dec_magnitude(int idx);
+    bool erase_effect_single_turn(int idx);
+
     void init_all_common_cards();
     void init_all_rare_cards();
 };

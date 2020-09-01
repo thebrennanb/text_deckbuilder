@@ -235,6 +235,23 @@ void Game::init_event_map() {
     }
 }
 
+void Game::player_choose_starting() {
+    cout << "Choose:\nType \"relic\" to gain 1 random relic.\nType \"cards\" to gain 2 random common cards and 1 random rare card." << endl;
+    string str;
+    while(1) {
+        cin >> str;
+        if(str == "relic") {
+
+            break;
+        } else if(str == "cards") {
+            player->get_cards(0, true, 2, 1);
+            break;
+        } else {
+            cout << "Couldn't understand." << endl;
+        }
+    }
+}
+
 void Game::display_player() {
     cout << "hp: " << player->hp << endl;
     cout << "Max stamina: " << player->max_stamina << endl;
@@ -277,7 +294,6 @@ void Game::play_map() {
                 if(event_map[y+1][i]->lower_events[j] == event_map[y][x]) {
                     //cout << "i -> x: " << i << " " << x << endl;
                     if(event_map[y+1].size() == event_map[y].size()) { //rows are the same length
-                        cout << "Looking" << endl; //TRYING TO FIGURE OUT WHY HAS A R BUT NO LINE TO IT TODO
                         if(i == x) {
                             build += "u/";
                             ok.push_back("u");
@@ -285,7 +301,6 @@ void Game::play_map() {
                             build += "l/";
                             ok.push_back("l");
                         } else {
-                            cout << i << " " << x << endl;
                             build += "r/";
                             ok.push_back("r");
                         }
@@ -415,7 +430,13 @@ void Game::display_map() {
                             }
                         }
                         else {
-                            build+="|";
+                            if(event_map[i][j]->lower_events[0] == event_map[i-1][j-1]) {
+                                build+="/";
+                            } else if(event_map[i][j]->lower_events[0] == event_map[i-1][j]) {
+                                build+="|";
+                            } else { //if doesn't point to direct lower, skew direction
+                                build+="\\";
+                            }
                         }
                     } else { //number of lower events = 2
                         if(j == 0) {
@@ -597,9 +618,11 @@ void Game::combat() {
             break;
         }
 
+        play_enemy_turn();
+
         inc_enemy_effects(event_map[player_location.second][player_location.first]);
 
-        play_enemy_turn();
+        event_map[player_location.second][player_location.first]->check_dead();
 
         if(player->isDead()) {
             cout << "You died" << endl;
@@ -688,7 +711,7 @@ void Game::play_player_turn() {
                             cout << "Card does not exist." << endl;
                         } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {
                             cout << "Set a target first." << endl;
-                        } else if(player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
+                        } else if(player->hand[stoi(input[1])]->split()[0][3] != "X" && player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
 
                             cout << "Not enough stamina." << endl;
                         } else {
@@ -730,50 +753,59 @@ void Game::play_card(int idx) {
     string name = does[0][0];
     string description = does[0][1];
     string classification = does[0][2];
-    int stamina_cost = stoi(does[0][3]);
-    player->stamina-=stamina_cost; //subtract stamina cost from playing card
+    int staminaCost;
+    int timesToPlay = 1;
+    if(does[0][3] == "X") {
+        staminaCost = player->stamina;
+        timesToPlay = staminaCost;
+    } else {
+        staminaCost = stoi(does[0][3]);
+    }
+    player->stamina-=staminaCost; //subtract stamina cost from playing card
     cout << "Played " << name << endl;
 
-    for(int i = 1; i < does.size(); i++) {
-        bool isX;
-        if(does[i][2] == "X") {
-            isX = true;
-        }
-        if(does[i][3] == "choose") {
-            if(player->target == -1) { //player targeting self
-
-            }
-            else { //targeting enemy
-                event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
-                if(does[i][0] != "none") {
-                    event_map[y][x]->curr_enemies[player->target]->add_effect(does[i][0], stoi(does[i][1]));
+    for(int t = 0; t < timesToPlay; t++) { //play 1 time if not "X", otherwise play staminaCost times
+        for(int i = 1; i < does.size(); i++) {
+            if(does[i][3] == "choose") {
+                if(player->target == -1) { //player targeting self
+                    //Do I need this?
                 }
-            }
-
-        } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
-            //do not calculate damage, this damage to self from cards. Bypasses effects like block, weak, frail, rage, etc.
-            if(does[i][0] != "none") {
-                player->add_effect(does[i][0], stoi(does[i][1]));
-            }
-            if(stoi(does[i][2]) != 0) {
-                player->take_damage(stoi(does[i][2])); //ignore players attack?
-            }
-
-        } else if(does[i][3] == "all enemies") {
-            for(int a = 0; a < event_map[y][x]->curr_enemies.size(); a++) {
-                event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
-                if(does[i][0] != "none") {
-                    event_map[y][x]->curr_enemies[a]->add_effect(does[i][0], stoi(does[i][1]));
+                else { //targeting enemy
+                    event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    if(does[i][0] != "none") {
+                        event_map[y][x]->curr_enemies[player->target]->add_effect(does[i][0], stoi(does[i][1]));
+                    }
+                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
                 }
-            }
-        } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
-            event_map[y][x]->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
-            if(does[i][0] != "none") {
-                event_map[y][x]->curr_enemies[0]->add_effect(does[i][0], stoi(does[i][1]));
+
+            } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
+                //do not calculate damage, this damage to self from cards. Bypasses effects like block, weak, frail, rage, etc.
+                if(does[i][0] != "none") {
+                    player->add_effect(does[i][0], stoi(does[i][1]));
+                }
+                if(stoi(does[i][2]) != 0) {
+                    player->take_damage(stoi(does[i][2])); //ignore players attack?
+                }
+
+            } else if(does[i][3] == "all enemies") {
+                for(int a = 0; a < event_map[y][x]->curr_enemies.size(); a++) {
+                    event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    if(does[i][0] != "none") {
+                        event_map[y][x]->curr_enemies[a]->add_effect(does[i][0], stoi(does[i][1]));
+                    }
+                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
+                }
+            } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
+                event_map[y][x]->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                if(does[i][0] != "none") {
+                    event_map[y][x]->curr_enemies[0]->add_effect(does[i][0], stoi(does[i][1]));
+                }
+                do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
             }
         }
     }
 }
+
 int Game::calc_damage_players_attack(int dmg) { //will currently not work for a player targeting self
     if(dmg == 0) { //Not always the case; maybe relic or card played makes all cards played deal x damage
         return 0;
@@ -781,6 +813,7 @@ int Game::calc_damage_players_attack(int dmg) { //will currently not work for a 
     int x = player_location.first;
     int y = player_location.second;
 
+    bool doubleD = false;
     for(int i = 0; i < player->effects.size(); i++) { //go thru player effects
         if(player->effects[i]->name == "rage") {
             dmg+=player->effects[i]->magnitude;
@@ -788,6 +821,13 @@ int Game::calc_damage_players_attack(int dmg) { //will currently not work for a 
         if(player->effects[i]->name == "weak") {
             dmg-=player->effects[i]->magnitude;
         }
+        if(player->effects[i]->name == "2x") {
+            doubleD = true;
+        }
+    }
+
+    if(doubleD) {
+        dmg*=2;
     }
 
     if(player->target != -1) { //targeting enemy - factor in enemy effects
@@ -834,11 +874,12 @@ void Game::play_enemy_turn() {
 
             for(int a = 1; a < does.size(); a++) {
                 if(does[a][3] == "player") { //enemy attacks player
-                    if(does[a][0] != "none") {
-                        player->add_effect(does[a][0], stoi(does[a][1]));
-                    }
                     if(stoi(does[a][2]) != 0) {
                         player->take_damage(calc_damage_enemy_attack(stoi(does[a][2]), i));
+                        do_retaliate_player(event_map[y][x]->curr_enemies[i]);
+                    }
+                    if(does[a][0] != "none") {
+                        player->add_effect(does[a][0], stoi(does[a][1]));
                     }
 
                 } else if(does[a][3] == "self") { //enemy hits itself - this will only be with an effect.
@@ -868,6 +909,7 @@ int Game::calc_damage_enemy_attack(int dmg, int idx) { //enemy attacking player
     int x = player_location.first;
     int y = player_location.second;
 
+    bool doubleD = false;
     for(int i = 0; i < event_map[y][x]->curr_enemies[idx]->effects.size(); i++) { //go thru effects
         if(event_map[y][x]->curr_enemies[idx]->effects[i]->name == "weak") {
             dmg-=event_map[y][x]->curr_enemies[idx]->effects[i]->magnitude;
@@ -875,6 +917,13 @@ int Game::calc_damage_enemy_attack(int dmg, int idx) { //enemy attacking player
         if(event_map[y][x]->curr_enemies[idx]->effects[i]->name == "rage") {
             dmg+=event_map[y][x]->curr_enemies[idx]->effects[i]->magnitude;
         }
+        if(event_map[y][x]->curr_enemies[idx]->effects[i]->name == "2x") {
+            doubleD = true;
+        }
+    }
+
+    if(doubleD) {
+        dmg*=2;
     }
 
     for(int i = 0; i < player->effects.size(); i++) { //go thru effects
@@ -903,19 +952,47 @@ int Game::calc_damage_enemy_attack(int dmg, int idx) { //enemy attacking player
     return dmg;
 }
 
+void Game::do_retaliate_player(Enemy* en) { //so this shouldn't be here but idk of another solution
+    bool found = false;
+    int idx = 0;
+    for(int i = 0; i < player->effects.size(); i++) {
+        if(player->effects[i]->name == "retaliate") {
+            found = true;
+            idx = i;
+        }
+    }
+    if(found) {
+        en->take_damage(player->effects[idx]->magnitude); //take damage equal to magnitude of defender retaliate.
+    }
+}
+void Game::do_retaliate_enemy(Enemy* en) { //so this shouldn't be here but idk of another solution
+    bool found = false;
+    int idx = 0;
+    for(int i = 0; i < en->effects.size(); i++) {
+        if(en->effects[i]->name == "retaliate") {
+            found = true;
+            idx = i;
+        }
+    }
+    if(found) {
+        player->take_damage(en->effects[idx]->magnitude); //take damage equal to magnitude of defender retaliate.
+    }
+}
+
 void Game::inc_enemy_effects(Event* ev) {
     for(int en = 0; en < ev->curr_enemies.size(); en++) {
         for(int i = 0; i < ev->curr_enemies[en]->effects.size(); i++) {
             if(!ev->curr_enemies[en]->effects[i]->lasting) { //will nullify single turn or decrements (maybe case of relic??)
                 if(ev->curr_enemies[en]->effects[i]->decrements) {
-                    ev->curr_enemies[en]->effects[i]->magnitude--; //decrement this magnitude
+                    ev->curr_enemies[en]->dec_magnitude(i); //decrement this magnitude
                     if(ev->curr_enemies[en]->effects[i]->magnitude == 0) {
                         ev->curr_enemies[en]->effects.erase(ev->curr_enemies[en]->effects.begin()+i);
                         i-=1; //safety
                     }
                 } else if(ev->curr_enemies[en]->effects[i]->single_turn) {
-                    ev->curr_enemies[en]->effects.erase(ev->curr_enemies[en]->effects.begin()+i);
-                    i-=1; //safety
+                    if(ev->curr_enemies[en]->erase_effect_single_turn(i)) {
+                       i-=1; //safety
+                    }
                 }
             }
         }
@@ -925,14 +1002,15 @@ void Game::inc_player_effects() {
     for(int i = 0; i < player->effects.size(); i++) {
         if(!player->effects[i]->lasting) { //will nullify single turn or decrements (maybe case of relic??)
             if(player->effects[i]->decrements) {
-                player->effects[i]->magnitude--; //decrement this magnitude
+                player->dec_magnitude(i); //decrement this magnitude
                 if(player->effects[i]->magnitude == 0) {
                     player->effects.erase(player->effects.begin() + i); //remove this effect from the array entirely
                     i-=1;
                 }
             } else if(player->effects[i]->single_turn) {
-                player->effects.erase(player->effects.begin() + i); //remove this effect from the array entirely
-                i-=1;
+                if(player->erase_effect_single_turn(i)) { //remove this effect from the array entirely
+                    i-=1;
+                }
             }
         }
     }

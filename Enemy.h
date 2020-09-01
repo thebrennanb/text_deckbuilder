@@ -26,5 +26,7 @@ public:             // Access specifier
     void take_damage(int dmg);
 
     void add_effect(string name, int magnitude);
+    void dec_magnitude(int idx);
+    bool erase_effect_single_turn(int idx);
 
 };

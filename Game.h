@@ -33,7 +33,6 @@ public:             // Access specifier
     void play_player_turn();
     void play_card(int idx);
     void play_enemy_turn();
-    void display_player();
     void display_enemies();
     void init_event_map();
     void play_map();
@@ -44,7 +43,7 @@ public:             // Access specifier
 
     int calc_damage_players_attack(int dmg);
     int calc_damage_enemy_attack(int dmg, int idx); //idx = index of enemy who used attack
-    void do_retaliate_enemy(Enemy* en, int idx_enemy);
+    void do_retaliate_enemy(Enemy* en);
     void do_retaliate_player(Enemy* en);
 
     //events

@@ -167,7 +167,7 @@
 	<string>
 	<vector>
 
-1598901005 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\main.cpp
+1599336568 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\main.cpp
 	<iostream>
 	<string>
 	"Game.h"
@@ -175,7 +175,7 @@
 	<string>
 	<time.h>
 
-1599285416 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.h
+1599336418 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.h
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
@@ -184,7 +184,7 @@
 	<map>
 	<string>
 
-1599285482 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.h
+1599334040 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.h
 	"Card.h"
 	"Relic.h"
 	"Effect.h"
@@ -206,7 +206,7 @@
 	<string>
 	<vector>
 
-1598742447 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.h
+1599333896 c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.h
 	"Enemy.h"
 	<vector>
 	<string>
@@ -227,22 +227,24 @@
 	<vector>
 	<iostream>
 
-1598979481 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.cpp
+1599329892 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\enemy.cpp
 	<string>
 	<vector>
 	"Enemy.h"
 	<iostream>
 	"Effect.h"
 
-1599286072 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.cpp
+1599337197 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\event.cpp
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
 	"Card.h"
 	"Event.h"
 	<iostream>
+	<sstream>
+	<algorithm>
 
-1599288734 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.cpp
+1599340076 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\player.cpp
 	"Card.h"
 	"Relic.h"
 	"Effect.h"
@@ -258,7 +260,7 @@
 	<string>
 	<vector>
 
-1599285441 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.cpp
+1599336566 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\game.cpp
 	"Player.h"
 	"Enemy.h"
 	"Relic.h"
@@ -277,7 +279,7 @@
 	<string>
 	<vector>
 
-1599280809 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.cpp
+1599336938 source:c:\d_drive\programs\text_deckbuilder\text_deckbuilder\effect.cpp
 	"Player.h"
 	"Enemy.h"
 	"Effect.h"

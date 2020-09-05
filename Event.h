@@ -26,7 +26,6 @@ public:
     string classif;
     vector<Enemy*> curr_enemies;
     vector<Event*> lower_events;
-    //vector<Event*> upper_events;
     void set_lower_events(vector<Event*> lower_events);
 
     void init_enemies();
@@ -35,9 +34,15 @@ public:
     bool enemy_reward(Player *p);
     bool elite_enemy_reward(Player *p);
     bool shop_offer(Player *p);
+    vector<Card*> get_cards_shop(Player *p, string rarity, int numToSee);
+    int rareCost = 70;
+    int commonCost = 30;
+
     bool chance_offer(Player *p);
     bool get_treasure(Player *p);
     bool boss_reward(Player *p);
+
+
     void display_enemies();
     void check_dead();
 

@@ -5,7 +5,8 @@
 
 #include "Event.h"
 #include <iostream>
-
+#include<sstream>
+#include<algorithm>
 Event::Event()
 {}
 
@@ -57,10 +58,10 @@ void Event::init_elite_enemies() {
         card1->init("Strike|Deal 6 damage|a|0|;none|0|3|player|;");
         card1->set_type("attack");
         Card *card2 = new Card();
-        card2->init("Mace swing|Deal 10 damage and add 1 wound to the player's discard pile|a|0|;add_status_wound|1|0|player|;");
+        card2->init("Mace swing|Deal 7 damage and add 1 wound to the player's discard pile|a|0|;add_status_wound|1|0|player|;none|0|7|player|;");
         card2->set_type("attack");
+        v.push_back(card1); //swapped order
         v.push_back(card);
-        v.push_back(card1);
         v.push_back(card2);
         gladiator->init("Gladiator", v, 180, 0);
 
@@ -129,7 +130,7 @@ void Event::init_enemies() {
         //slime
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Lick|Give 2 vulnerable|a|0|;vulnerable|2|0|player|;");
+        card->init("Lick|Give 1 vulnerable|a|0|;vulnerable|1|0|player|;");
         card->set_type("add_effect");
         Card *card2 = new Card();
         card2->init("Phagocytosis|Deal 3 damage|a|0|;none|0|3|player|;");
@@ -290,8 +291,136 @@ bool Event::elite_enemy_reward(Player *p) {
     p->get_card(2, 5);
 }
 bool Event::shop_offer(Player *p) {
+    cout << "Reached a shop." << endl;
+    //3 relic options, 4 card options, 2 choice options, 1 deck manipulation option.
+    //3 random relics
 
+    //3 random common cards
+    vector<Card*> commonCardList = get_cards_shop(p, "common", 3);
+
+    //2 random rare cards
+    vector<Card*> rareCardList = get_cards_shop(p, "rare", 2);
+
+    //2 from: make 1 cheaper (20), +10 damage (only on contains none cards) (20), +20 and consume (only on contains none cards) (20), holdover (100), add +3 to effect(s) (80), remove consume (80),
+
+    //either remove card or duplicate card
+    bool leave = false;
+    while(!leave) {
+        cout << "You have " << p->coins << " coins left. What will you buy?" << endl;
+        //print common cards
+        for(int i = 0; i < commonCardList.size(); i++) {
+            vector<vector<string>> does = commonCardList[i]->split();
+            cout << i << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--  ($" << commonCost << ")" << endl;
+        }
+        //print rare cards
+        for(int i = 0; i < rareCardList.size(); i++) {
+            vector<vector<string>> does = rareCardList[i]->split();
+            cout << i+commonCardList.size() << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--  ($" << rareCost << ")" << endl;
+        }
+        bool madeAction = false;
+        while(!madeAction) {
+            string temp;
+            vector<string> input;
+            string line;
+            getline(cin, line);
+            istringstream iss(line);
+            while(iss >> temp) {
+                input.push_back(temp);
+            }
+            if(input.empty()) {
+                cout << "Input something." << endl;
+            } else {
+                if(input.size() == 1) { //all inputs with 1 word
+                    if(input[0] == "leave") {
+                        madeAction = true;
+                        leave = true;
+                    } else if(input[0] == "help") {
+                        cout << "Make an action:\n\"buy <type> <position>\" to buy something (either a relic, a card, or an upgrade-eg. buy card 0), \"buy relic <relic>\" to buy a relic, \"display deck\" to display your deck, \"leave\" to leave the shop, \"me\" to see everything about you." << endl;
+                    } else if(input[0] == "me") {
+                        p->display_player();
+                    } else {
+                        cout << "Could not understand." << endl;
+                    }
+                } else if(input.size() >= 2) { //all the rest require > 1 input
+
+                    if(input[0] == "display" && input[1] == "deck") {
+                        p->display_deck();
+
+                    } else if(input[0] == "buy") { //buy something
+                        if(input[1] == "card") {
+                            int pos = stoi(input[2]);
+                            if(pos < commonCardList.size()+rareCardList.size()) {
+                                if(pos < commonCardList.size()) {
+                                    if(p->coins >= commonCost) {
+                                        cout << "Added a " << commonCardList[pos]->split()[0][0] << " to your deck." << endl;
+                                        p->deck.push_back(commonCardList[pos]);
+                                        commonCardList.erase(commonCardList.begin() + pos);
+                                        p->coins-=commonCost;
+                                        madeAction = true;
+                                    } else  {
+                                        cout << "You don't have enough coins." << endl;
+                                    }
+                                } else {
+                                    if(p->coins >= rareCost) {
+                                        cout << "Added a " << rareCardList[pos-commonCardList.size()]->split()[0][0] << " to your deck." << endl;
+                                        p->deck.push_back(rareCardList[pos-commonCardList.size()]);
+                                        rareCardList.erase(rareCardList.begin() + pos-commonCardList.size());
+                                        p->coins-=rareCost;
+                                        madeAction = true;
+                                    } else {
+                                        cout << "You don't have enough coins." << endl;
+                                    }
+                                }
+                            }
+                        } else if(input[1] == "relic") {
+
+                        } else if(input[1] == "upgrade") {
+
+                        }
+
+                    } else {
+                        cout << "Could not understand." << endl;
+                    }
+                } else {
+                    cout << "Could not understand" << endl;
+                }
+                cout << endl;
+            }
+        }
+
+    }
 }
+vector<Card*> Event::get_cards_shop(Player *p, string rarity, int numToSee) {
+    vector<Card*> cards;
+    vector<int> cardsChosen;
+
+    if(rarity == "common") {
+        int szC = p->common_cards.size();
+        for(int i = 0; i < numToSee; i++) {
+            int rn = rand()%(szC);
+            if(std::find(cardsChosen.begin(), cardsChosen.end(), rn) != cardsChosen.end()) {
+                i--;
+            } else {
+                cardsChosen.push_back(rn);
+                cards.push_back(p->common_cards[rn]);
+            }
+        }
+    } else if(rarity == "rare") {
+        int szR = p->rare_cards.size();
+        for(int i = 0; i < numToSee; i++) {
+            int rn = rand()%(szR);
+            if(std::find(cardsChosen.begin(), cardsChosen.end(), rn) != cardsChosen.end()) {
+                i--;
+            } else {
+                cardsChosen.push_back(rn);
+                cards.push_back(p->rare_cards[rn]);
+            }
+        }
+    }
+    return cards;
+}
+
+
 bool Event::chance_offer(Player *p) {
 
 }

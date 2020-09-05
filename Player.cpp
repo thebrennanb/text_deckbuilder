@@ -38,6 +38,7 @@ void Player::init_deck_before_combat() {
     hand.clear();
     discard_pile.clear();
     draw_pile.clear();
+    discard_pile.clear();
     for(int i = 0; i < deck.size(); i++) {
         draw_pile.push_back(deck[i]);
     }
@@ -150,7 +151,7 @@ void Player::get_card(int numGet, int numCards) {
             }
         }
     }
-    while(numGet > 0) { //THERE IS A PROBLEM WITH SOME CARDS HERE WTF TODO
+    while(numGet > 0) {
         cout << "You can choose " << numGet << " more cards, or type skip to skip your remaining options." << endl;
         cout << "Card choices:" << endl;
         for(int j = 0; j < cards_choose.size(); j++) {
@@ -218,6 +219,27 @@ void Player::display_draw_pile() {
     for(int i = 0; i < draw_pile.size(); i++) {
         vector<vector<string>> does = draw_pile[i]->split();
         cout << i << "  (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+    }
+}
+
+void Player::display_consume_pile() {
+    cout << consume_pile.size() << " cards in consume pile:" << endl;
+    for(int i = 0; i < consume_pile.size(); i++) {
+        vector<vector<string>> does = consume_pile[i]->split();
+        cout << i << "  (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+    }
+}
+
+void Player::display_player() {
+    cout << "hp: " << hp << endl;
+    cout << "Max stamina: " << max_stamina << endl;
+    cout << "Number of cards drawn each turn: " << num_draw << endl;
+    cout << "Number of coins: " << coins << endl;
+    if(!effects.empty()) {
+        cout << "Effects:" << endl;
+        for(int i=0; i<effects.size(); i++) {
+            cout << effects[i]->name << " " << effects[i]->magnitude << endl;
+        }
     }
 }
 
@@ -307,11 +329,12 @@ void Player::add_effect(string name, int magnitude) {
         }
         return;
     } else if(name == "convert_armor_to_rage") { //change armor into rage
-        name == "rage";
+        name = "rage";
         int m = -1;
         for(int i = 0; i < effects.size(); i++) {
             if(effects[i]->name == "armor") {
                 m = effects[i]->magnitude;
+                effects.erase(effects.begin() + i);
             }
         }
         if(m == -1) {
@@ -321,14 +344,10 @@ void Player::add_effect(string name, int magnitude) {
         }
         cout << "name: " << name << " , magnitude: " << magnitude << endl;
     } else if(sizeof(name) > 7 && name.substr(0,8) == "add_card") { //add this card to hand
-        cout << "JKLDFSJFLKDSJFKLJDSLKFJDSLK add_card" << endl;
         for(int i = 0; i < magnitude; i++) {
             hand.push_back(card_name_map[name.substr(9,sizeof(name)-1)]);
         }
         return;
-    }
-    if(sizeof(name) > 7) {
-        cout << name.substr(0,7) << endl;
     }
 
     int agilityAdd = 0;
@@ -485,7 +504,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Cross", card20));*/
 
     Card *card21 = new Card();
-    card21->init("Hook|Deal 10 damage to the closest enemy.|Common|1|;none|0|10|closest enemy|;");
+    card21->init("Hook|Deal 15 damage to the closest enemy.|Common|1|;none|0|15|closest enemy|;");
     common_cards.push_back(card21);
     card_name_map.insert(std::make_pair("Hook", card21));
 
@@ -542,12 +561,12 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Brace", card31));
 
     Card *card32 = new Card(); //only to be added, don't add to list
-    card32->init("Power up|Your next 2 attacks deals double damage.|Common|3|;2x|2|0|self|;");
+    card32->init("Power up|Your attacks for the next 2 turns deal double damage.|Common|3|;2x|2|0|self|;");
     common_cards.push_back(card32);
     card_name_map.insert(std::make_pair("Power up", card32));
 
     Card *card33 = new Card(); //only to be added, don't add to list
-    card33->init("Force palm|Deal 5 damage and give the enemy 2 vulnerable.|Common|1|;vulnerable|2|0|self|;none|0|5|self|;");
+    card33->init("Force palm|Deal 5 damage and give the enemy 2 vulnerable.|Common|1|;vulnerable|2|0|choose|;none|0|5|choose|;");
     common_cards.push_back(card33);
     card_name_map.insert(std::make_pair("Force palm", card33));
 
@@ -558,7 +577,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Like a feather", card34));
 
     Card *card35 = new Card(); //only to be added, don't add to list
-    card35->init("Dash|Draw 2 cards. Consume.|Common|0|;draw|2|0|self|;");
+    card35->init("Dash|Draw 3 cards. Consume.|Common|0|;draw|3|0|self|;");
     card35->set_consume();
     common_cards.push_back(card35);
     card_name_map.insert(std::make_pair("Dash", card35));
@@ -570,7 +589,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Brace", cardEx1));
 
     Card *cardEx2 = new Card(); //only to be added, don't add to list
-    cardEx2->init("Pummel|Deal 1 damage, twice. Consume.|Common|0|;none|0|1|self|;none|0|1|self|;");
+    cardEx2->init("Pummel|Deal 1 damage, twice. Consume.|Common|0|;none|0|1|choose|;none|0|1|choose|;");
     cardEx2->set_consume();
     card_name_map.insert(std::make_pair("Pummel", cardEx2));
 
@@ -624,7 +643,7 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Flying knee", card8));
 
     Card *card9 = new Card();
-    card9->init("Mixup|Your next attack deals double damage.|Rare|1|;2x|1|0|self|;");
+    card9->init("Mixup|Your attacks for the rest of the turn deal double damage.|Rare|1|;2x|1|0|self|;");
     rare_cards.push_back(card9);
     card_name_map.insert(std::make_pair("Mixup", card9));
 
@@ -664,7 +683,7 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Blood deal", card15));
 
     Card *card16 = new Card();
-    card16->init("Cursed blood|Lose 5 hp and draw 3 cards.|Rare|1|;draw|3|0|self|;none|0|5|self|;");
+    card16->init("Cursed blood|Lose 5 hp and draw 3 cards.|Rare|0|;draw|3|0|self|;none|0|5|self|;");
     rare_cards.push_back(card16);
     card_name_map.insert(std::make_pair("Cursed blood", card16));
 

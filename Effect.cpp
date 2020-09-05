@@ -50,5 +50,10 @@ void Effect::init_effect(string n) {
         lasting = false;
         decrements = true;
         is_good = true;
+    } else if(n == "2x") {
+        single_turn = false;
+        lasting = false;
+        decrements = true;
+        is_good = true;
     }
 }

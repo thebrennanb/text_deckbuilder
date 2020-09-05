@@ -20,6 +20,7 @@ public:             // Access specifier
     vector<Card*> draw_pile;
     vector<Card*> discard_pile;
     vector<Card*> hand;
+    vector<Card*> consume_pile;
     vector<Card*> common_cards;
     vector<Card*> rare_cards;
     map<string, Card*> card_name_map;
@@ -34,6 +35,7 @@ public:             // Access specifier
     vector<Relic*> relics;
     vector<Effect*> effects;
     int target;
+    void display_player();
 
     bool isDead();
     void take_damage(int dmg);
@@ -48,6 +50,7 @@ public:             // Access specifier
     void display_draw_pile();
     void display_discard_pile();
     void display_deck();
+    void display_consume_pile();
     void round_start();
     void add_to_coins(int n);
     void add_effect(string name, int magnitude);

@@ -17,7 +17,5 @@ int main()
     game->player_choose_starting();
     game->play_map();
 
-    cout << "YOU MADE IT OUT OF THE DUNGEON! CONGRATS! YOU WIN!" << endl;
-
     return 0;
 }

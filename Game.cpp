@@ -252,19 +252,6 @@ void Game::player_choose_starting() {
     }
 }
 
-void Game::display_player() {
-    cout << "hp: " << player->hp << endl;
-    cout << "Max stamina: " << player->max_stamina << endl;
-    cout << "Number of cards drawn each turn: " << player->num_draw << endl;
-    cout << "Number of coins: " << player->coins << endl;
-    if(!player->effects.empty()) {
-        cout << "Effects:" << endl;
-        for(int i=0; i<player->effects.size(); i++) {
-            cout << player->effects[i]->name << " " << player->effects[i]->magnitude << endl;
-        }
-    }
-}
-
 void Game::init() {
     player->init_deck();
     init_event_map();
@@ -333,7 +320,7 @@ void Game::play_map() {
         while(1) {
             cin >> direction;
             if(direction == "me") {
-                display_player();
+                player->display_player();
                 cin >> direction;
             }
             if(!(std::find(ok.begin(), ok.end(), direction) != ok.end()) && direction != "skip") {
@@ -365,7 +352,11 @@ void Game::play_map() {
             player_location.second++;
         }
     }
-
+    if(player->isDead()) {
+        cout << "You died." << endl;
+    } else {
+        cout << "YOU MADE IT OUT OF THE DUNGEON! CONGRATS! YOU WIN!" << endl;
+    }
 }
 
 void Game::display_map() {
@@ -618,9 +609,9 @@ void Game::combat() {
             break;
         }
 
-        play_enemy_turn();
-
         inc_enemy_effects(event_map[player_location.second][player_location.first]);
+
+        play_enemy_turn();
 
         event_map[player_location.second][player_location.first]->check_dead();
 
@@ -646,6 +637,11 @@ void Game::play_player_turn() {
         cout << "\nStamina left: " << player->stamina << ", hp left: " << player->hp << ". What will you do?" << endl;
         bool madeAction = false;
         while(!madeAction) {
+            if(player->hp == 0) {
+                madeAction = true;
+                endTurn = true;
+                break;
+            }
             string temp;
             vector<string> input;
             string line;
@@ -664,20 +660,20 @@ void Game::play_player_turn() {
                         endTurn = true;
                     }
                     if(input[0] == "help") {
-                        cout << "Make an action:\n\"card <card>\" to play a card, \"draw pile\" to view your draw pile, \"discard pile\" to view your discard pile, \"end turn\" to end your turn, \"me\" to see everything about you, \"enemies\" to see everything about the current enemies, \"target <enemy>\" to set a target." << endl;
+                        cout << "Make an action:\n\"card <card>\" to play a card, \"display draw pile\" to view your draw pile, \"display discard pile\" to view your discard pile, \"display consume pile\" to view your consume pile, \"end turn\" to end your turn, \"me\" to see everything about you, \"enemies\" to see everything about the current enemies, \"target <enemy>\" to set a target." << endl;
                     } else if(input[0] == "quit") {
                         playerQuit = true;
                         madeAction = true;
                         endTurn = true;
                         cout << "You quit." << endl;
                     } else if(input[0] == "me") {
-                        display_player();
+                        player->display_player();
                     } else if(input[0] == "enemies") {
                         event_map[y][x]->display_enemies();
                     } else {
                         cout << "Could not understand." << endl;
                     }
-                } else if(input.size() == 2) { //all the rest require > 1 input
+                } else if(input.size() >= 2) { //all the rest require > 1 input
                     if(input[0] == "end" && input[1] == "turn") {
                         madeAction = true;
                         endTurn = true;
@@ -694,10 +690,10 @@ void Game::play_player_turn() {
                                 cout << "Setting target enemy: " << event_map[y][x]->curr_enemies[stoi(input[1])]->name;
                             }
                         }
-                    } else if(input[0] == "draw" && input[1] == "pile") {
+                    } else if(input.size() > 2 && input[0] == "display" && input[1] == "draw" && input[2] == "pile") {
                        player->display_draw_pile();
 
-                    } else if(input[0] == "discard" && input[1] == "pile") {
+                    } else if(input.size() > 2 && input[0] == "display" && input[1] == "discard" && input[2] == "pile") {
                         player->display_discard_pile();
 
                     } else if(input[0] == "display" && input[1] == "hand") {
@@ -705,6 +701,9 @@ void Game::play_player_turn() {
 
                     } else if(input[0] == "display" && input[1] == "deck") {
                         player->display_deck();
+
+                    } else if(input.size() > 2 && input[0] == "display" && input[1] == "consume" && input[2] == "pile") {
+                        player->display_consume_pile();
 
                     } else if(input[0] == "card") { //play card
                         if(stoi(input[1]) >= player->hand.size()) { //card does not exist.
@@ -777,11 +776,11 @@ void Game::play_card(int idx) {
                 else { //targeting enemy
                     if(stoi(does[i][2]) != 0) { //do damage if != 0
                         event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                        do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
                     }
                     if(does[i][0] != "none") {
                         event_map[y][x]->curr_enemies[player->target]->add_effect(does[i][0], stoi(does[i][1]));
                     }
-                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
                 }
 
             } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
@@ -797,11 +796,11 @@ void Game::play_card(int idx) {
                 for(int a = 0; a < event_map[y][x]->curr_enemies.size(); a++) {
                     if(stoi(does[i][2]) != 0) { //do damage if != 0
                         event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                        do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
                     }
                     if(does[i][0] != "none") {
                         event_map[y][x]->curr_enemies[a]->add_effect(does[i][0], stoi(does[i][1]));
                     }
-                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
                 }
             } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
                 if(stoi(does[i][2]) != 0) { //do damage if != 0
@@ -810,17 +809,18 @@ void Game::play_card(int idx) {
                 if(does[i][0] != "none") {
                     event_map[y][x]->curr_enemies[0]->add_effect(does[i][0], stoi(does[i][1]));
                 }
-                do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
+                do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
             }
         }
     }
 
-    if(!player->hand[idx]->consume) {
-        player->discard_pile.push_back(player->hand[idx]); //put card in discard pile
-        player->hand.erase(player->hand.begin()+idx); //remove card from hand.
-    } else {
+    if(player->hand[idx]->consume) {
+        player->consume_pile.push_back(player->hand[idx]); //put card in discard pile
         player->hand.erase(player->hand.begin()+idx); //remove card from hand.
         cout << name << " was consumed." << endl;
+    } else {
+        player->discard_pile.push_back(player->hand[idx]); //put card in discard pile
+        player->hand.erase(player->hand.begin()+idx); //remove card from hand.
     }
 
 }
@@ -984,11 +984,30 @@ void Game::do_retaliate_player(Enemy* en) { //so this shouldn't be here but idk 
         }
     }
     if(found) {
-        cout << "RETALIATE FOUND from player" << endl;
-        en->take_damage(calc_damage_players_attack(player->effects[idx]->magnitude)); //take damage equal to magnitude of defender retaliate.
+        //removes armor but does not get affected by vulnerable or rage
+        int dmg = player->effects[idx]->magnitude;
+        for(int i = 0; i < en->effects.size(); i++) { //go thru effects
+            if(en->effects[i]->name == "armor") {
+                int dmgMitigated = 0;
+                en->effects[i]->magnitude-=dmg;
+                if(en->effects[i]->magnitude > 0) {
+                    dmgMitigated = dmg;
+                } else if(en->effects[i]->magnitude == 0) {
+                    dmgMitigated = dmg;
+                    en->effects.erase(en->effects.begin()+i);
+                    i--;
+                } else if(en->effects[i]->magnitude < 0) {
+                    dmgMitigated = en->effects[i]->magnitude+dmg; //add back to get pre-dmg magnitude
+                    en->effects.erase(en->effects.begin()+i);
+                    i--;
+                }
+                dmg-=dmgMitigated;
+            }
+        }
+        en->take_damage(dmg); //take damage equal to magnitude of defender retaliate.
     }
 }
-void Game::do_retaliate_enemy(Enemy* en, int idx_enemy) { //so this shouldn't be here but idk of another solution
+void Game::do_retaliate_enemy(Enemy* en) { //so this shouldn't be here but idk of another solution
     bool found = false;
     int idx = 0;
     for(int i = 0; i < en->effects.size(); i++) {
@@ -998,7 +1017,27 @@ void Game::do_retaliate_enemy(Enemy* en, int idx_enemy) { //so this shouldn't be
         }
     }
     if(found) {
-        player->take_damage(calc_damage_enemy_attack(en->effects[idx]->magnitude, idx_enemy)); //take damage equal to magnitude of defender retaliate.
+        //removes armor but does not get affected by vulnerable or rage
+        int dmg = en->effects[idx]->magnitude;
+        for(int i = 0; i < player->effects.size(); i++) { //go thru effects
+            if(player->effects[i]->name == "armor") {
+                int dmgMitigated = 0;
+                player->effects[i]->magnitude-=dmg;
+                if(player->effects[i]->magnitude > 0) {
+                    dmgMitigated = dmg;
+                } else if(player->effects[i]->magnitude == 0) {
+                    dmgMitigated = dmg;
+                    player->effects.erase(player->effects.begin()+i);
+                    i--;
+                } else if(player->effects[i]->magnitude < 0) {
+                    dmgMitigated = player->effects[i]->magnitude+dmg; //add back to get pre-dmg magnitude
+                    player->effects.erase(player->effects.begin()+i);
+                    i--;
+                }
+                dmg-=dmgMitigated;
+            }
+        }
+        player->take_damage(dmg); //take damage equal to magnitude of defender retaliate.
     }
 }
 

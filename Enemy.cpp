@@ -52,7 +52,7 @@ bool Enemy::erase_effect_single_turn(int idx) {
             retain_armor = true;
         }
     }
-    if(!(effects[idx]->name == "armor" && retain_armor)) { //if armor and retain armor don't erase it
+    if(effects[idx]->name == "armor" && retain_armor) { //if armor and retain armor don't erase it
         return false;
     }
 

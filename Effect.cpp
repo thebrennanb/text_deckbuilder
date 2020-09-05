@@ -42,8 +42,8 @@ void Effect::init_effect(string n) {
         is_good = false;
     } else if(n == "retaliate") {
         single_turn = false;
-        lasting = true;
-        decrements = false;
+        lasting = false;
+        decrements = true;
         is_good = true;
     } else if(n == "retain_armor") {
         single_turn = false;

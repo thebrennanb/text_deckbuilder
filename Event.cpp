@@ -51,11 +51,14 @@ void Event::init_elite_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         //name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
-        card->init("Execute|Deal 30 damage|a|0|;none|0|8|player|;");
+        card->init("Execute|Deal 20 damage|a|0|;none|0|20|player|;");
+        card->set_type("attack");
         Card *card1 = new Card();
         card1->init("Strike|Deal 6 damage|a|0|;none|0|3|player|;");
+        card1->set_type("attack");
         Card *card2 = new Card();
         card2->init("Mace swing|Deal 10 damage and add 1 wound to the player's discard pile|a|0|;add_status_wound|1|0|player|;");
+        card2->set_type("attack");
         v.push_back(card);
         v.push_back(card1);
         v.push_back(card2);
@@ -65,6 +68,7 @@ void Event::init_elite_enemies() {
         vector<Card*> v2;
         Card *card5 = new Card();
         card5->init("Strike|Deal 3 damage|a|0|;none|0|3|player|;");
+        card5->set_type("attack");
         v2.push_back(card5);
         Enemy *henchman = new Enemy();
         henchman->init("Henchman", v2, 20+randNn, 0);
@@ -72,20 +76,30 @@ void Event::init_elite_enemies() {
         curr_enemies.push_back(gladiator);
         curr_enemies.push_back(henchman);
     } else if(randN == 1) {
-        //slime
+        //illusionist
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Blinding flash|Add 2 daze to the player's discard pile|a|0|;add_status_daze|2|0|player|;");
+        card->init("Blinding flash|Add 3 daze to the player's discard pile|a|0|;add_status_daze|2|0|player|;");
+        card->set_type("add_status");
         Card *card2 = new Card();
         card2->init("Trick|Deal 5 damage and add 1 daze to the player's discard pile|a|0|;none|0|5|player|;add_status_daze|1|0|player|;");
+        card2->set_type("attack");
         v.push_back(card);
         v.push_back(card2);
-        for(int i = 0; i < 3; i++) { //3 illusionist
-            int randNn = rand()%(5)-2; //-2 to 2
-            Enemy *enemy1 = new Enemy();
-            enemy1->init("Illusionist", v, 33+randNn, 0);
-            curr_enemies.push_back(enemy1);
-        }
+
+        int randNn = rand()%(5)-2; //-2 to 2
+        Enemy *enemy1 = new Enemy();
+        enemy1->init("Illusionist", v, 33+randNn, 0);
+        curr_enemies.push_back(enemy1);
+
+        vector<Card*> v2;
+        v2.push_back(card2);
+        v2.push_back(card);
+        randNn = rand()%(5)-2; //-2 to 2
+        Enemy *enemy2 = new Enemy();
+        enemy2->init("Illusionist", v2, 33+randNn, 0);
+        curr_enemies.push_back(enemy2);
+
 
     } else if(randN == 2) {
         //think of one
@@ -102,6 +116,7 @@ void Event::init_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         card->init("Stab|Deal 5 damage|a|0|;none|0|5|player|;");
+        card->set_type("attack");
         v.push_back(card);
         for(int i = 0; i < 2; i++) {
             int randNn = rand()%(5)-2; //-2 to 2
@@ -115,15 +130,22 @@ void Event::init_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         card->init("Lick|Give 2 vulnerable|a|0|;vulnerable|2|0|player|;");
+        card->set_type("add_effect");
         Card *card2 = new Card();
         card2->init("Phagocytosis|Deal 3 damage|a|0|;none|0|3|player|;");
+        card2->set_type("attack");
         v.push_back(card);
         v.push_back(card2);
         for(int i = 0; i < 5; i++) { //5 slimes
             int randNn = rand()%(5)-2; //-2 to 2
             Enemy *enemy1 = new Enemy();
-            enemy1->init("Slime", v, 12+randNn, 0);
+            enemy1->init("Slime", v, 10+randNn, 0);
             curr_enemies.push_back(enemy1);
+            randNn = rand()%(2);
+            if(randNn == 0) { //swap cards
+                v.push_back(v[0]);
+                v.erase(v.begin());
+            }
         }
 
     } else if(randN == 2) {
@@ -131,44 +153,49 @@ void Event::init_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         card->init("Hellpower|Gain 4 rage|a|0|;rage|3|0|self|;");
+        card->set_type("add_effect");
         Card *card5 = new Card();
         card5->init("Swipe|Deal 8 damage|a|0|;none|0|8|player|;");
+        card5->set_type("attack");
         Card *card2 = new Card();
         card2->init("Screech|Give 3 weak|a|0|;weak|3|0|player|;");
+        card2->set_type("add_effect");
         Card *card4 = new Card();
         card4->init("Brimstone|Deal 30 damage|a|0|;none|0|30|player|;");
+        card4->set_type("attack");
         v.push_back(card);
         v.push_back(card5);
         v.push_back(card2);
         v.push_back(card4);
-        for(int i = 0; i < 5; i++) { //5 slimes
-            int randNn = rand()%(11)-5; //-5 to 5
-            Enemy *enemy1 = new Enemy();
-            enemy1->init("Demon acolyte", v, 90+randNn, 0);
-            curr_enemies.push_back(enemy1);
-        }
+        int randNn = rand()%(11)-5; //-5 to 5
+        Enemy *enemy1 = new Enemy();
+        enemy1->init("Demon acolyte", v, 70+randNn, 0);
+        curr_enemies.push_back(enemy1);
 
-    } else if(randN == 2) {
+
+    } else if(randN == 3) {
         //stone guard
         vector<Card*> v;
         Card *card = new Card();
         card->init("Defensive stance|Gain 15 armor|a|0|;armor|15|0|self|;");
+        card->set_type("add_effect");
         Card *card2 = new Card();
         card2->init("Thorn armor|Gain 4 retaliate|a|0|;retaliate|4|0|self|;");
+        card2->set_type("add_effect");
         Card *card3 = new Card();
         card3->init("Defensive stance|Gain 15 armor|a|0|;armor|15|0|self|;");
+        card3->set_type("add_effect");
         Card *card4 = new Card();
         card4->init("Armored strike|Deal 10 damage and gain 5 armor|a|0|;armor|5|0|self|;none|0|10|player|;");
+        card4->set_type("attack");
         v.push_back(card);
         v.push_back(card2);
         v.push_back(card3);
         v.push_back(card4);
-        for(int i = 0; i < 5; i++) { //5 slimes
-            int randNn = rand()%(11)-5; //-5 to 5
-            Enemy *enemy1 = new Enemy();
-            enemy1->init("Stone guard", v, 100+randNn, 0);
-            curr_enemies.push_back(enemy1);
-        }
+        int randNn = rand()%(11)-5; //-5 to 5
+        Enemy *enemy1 = new Enemy();
+        enemy1->init("Stone guard", v, 100+randNn, 0);
+        curr_enemies.push_back(enemy1);
     }
 
 
@@ -182,18 +209,22 @@ void Event::init_boss() {
 
     Card *card1 = new Card();
     card1->init("Empower|Gain 5 rage|a|0|;rage|5|0|self|;");
+    card1->set_type("add_status");
     v.push_back(card1);
 
     Card *card4 = new Card();
     card4->init("Gnash|Deal 1 damage, 4 times|a|0|;none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;");
+    card4->set_type("attack");
     v.push_back(card4);
 
     Card *card = new Card();
     card->init("Heavy strike|Deal 25 damage|a|0|;none|0|25|player|;");
+    card->set_type("attack");
     v.push_back(card);
 
     Card *card2 = new Card();
     card2->init("Double slash|Deal 3 damage, twice|a|0|;none|0|3|player|;none|0|3|player|;");
+    card2->set_type("attack");
     v.push_back(card2);
 
     boss->init("Blood demon", v, 300, 0);
@@ -266,6 +297,8 @@ bool Event::chance_offer(Player *p) {
 }
 bool Event::get_treasure(Player *p) {
     p->add_to_coins(200);
+    p->get_card(1, 4);
+    p->get_card(1, 4);
 }
 bool Event::boss_reward(Player *p) {
     //p->add_to_coins(200);

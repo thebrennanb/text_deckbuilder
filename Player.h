@@ -22,6 +22,7 @@ public:             // Access specifier
     vector<Card*> hand;
     vector<Card*> common_cards;
     vector<Card*> rare_cards;
+    map<string, Card*> card_name_map;
 
     int hp = 50;
     int max_hp = 50;
@@ -29,6 +30,7 @@ public:             // Access specifier
     int stamina = 0;
     int num_draw = 5;
     int coins = 0;
+    int max_hand_size = 10;
     vector<Relic*> relics;
     vector<Effect*> effects;
     int target;

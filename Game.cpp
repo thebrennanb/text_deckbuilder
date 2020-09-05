@@ -725,8 +725,6 @@ void Game::play_player_turn() {
                                 endTurn = true;
                                 break;
                             }
-                            player->discard_pile.push_back(player->hand[stoi(input[1])]); //put card in discard pile
-                            player->hand.erase(player->hand.begin()+stoi(input[1])); //remove card from hand.
 
                         }
                     } else {
@@ -745,12 +743,18 @@ void Game::play_player_turn() {
 
 void Game::play_card(int idx) {
     //CHANGE
+
     int x = player_location.first;
     int y = player_location.second;
 
     //format: name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
     vector<vector<string>> does = player->hand[idx]->split();
     string name = does[0][0];
+    if(!player->hand[idx]->playable) { //card not playable
+        cout << name << " is unplayable." << endl;
+        return;
+    }
+
     string description = does[0][1];
     string classification = does[0][2];
     int staminaCost;
@@ -771,11 +775,13 @@ void Game::play_card(int idx) {
                     //Do I need this?
                 }
                 else { //targeting enemy
-                    event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    if(stoi(does[i][2]) != 0) { //do damage if != 0
+                        event_map[y][x]->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    }
                     if(does[i][0] != "none") {
                         event_map[y][x]->curr_enemies[player->target]->add_effect(does[i][0], stoi(does[i][1]));
                     }
-                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
+                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
                 }
 
             } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
@@ -789,21 +795,34 @@ void Game::play_card(int idx) {
 
             } else if(does[i][3] == "all enemies") {
                 for(int a = 0; a < event_map[y][x]->curr_enemies.size(); a++) {
-                    event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    if(stoi(does[i][2]) != 0) { //do damage if != 0
+                        event_map[y][x]->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    }
                     if(does[i][0] != "none") {
                         event_map[y][x]->curr_enemies[a]->add_effect(does[i][0], stoi(does[i][1]));
                     }
-                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
+                    do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
                 }
             } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
-                event_map[y][x]->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                if(stoi(does[i][2]) != 0) { //do damage if != 0
+                    event_map[y][x]->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                }
                 if(does[i][0] != "none") {
                     event_map[y][x]->curr_enemies[0]->add_effect(does[i][0], stoi(does[i][1]));
                 }
-                do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target]);
+                do_retaliate_enemy(event_map[y][x]->curr_enemies[player->target], player->target);
             }
         }
     }
+
+    if(!player->hand[idx]->consume) {
+        player->discard_pile.push_back(player->hand[idx]); //put card in discard pile
+        player->hand.erase(player->hand.begin()+idx); //remove card from hand.
+    } else {
+        player->hand.erase(player->hand.begin()+idx); //remove card from hand.
+        cout << name << " was consumed." << endl;
+    }
+
 }
 
 int Game::calc_damage_players_attack(int dmg) { //will currently not work for a player targeting self
@@ -835,8 +854,7 @@ int Game::calc_damage_players_attack(int dmg) { //will currently not work for a 
             if(event_map[y][x]->curr_enemies[player->target]->effects[i]->name == "vulnerable") {
                 dmg+=event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude;
             }
-
-            if(event_map[y][x]->curr_enemies[player->target]->effects[i]->name == "armor") {
+            else if(event_map[y][x]->curr_enemies[player->target]->effects[i]->name == "armor") {
                 int dmgMitigated = 0;
                 event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude-=dmg;
                 if(event_map[y][x]->curr_enemies[player->target]->effects[i]->magnitude > 0) {
@@ -875,7 +893,9 @@ void Game::play_enemy_turn() {
             for(int a = 1; a < does.size(); a++) {
                 if(does[a][3] == "player") { //enemy attacks player
                     if(stoi(does[a][2]) != 0) {
-                        player->take_damage(calc_damage_enemy_attack(stoi(does[a][2]), i));
+                        if(stoi(does[a][2]) != 0) { //do damage if != 0
+                            player->take_damage(calc_damage_enemy_attack(stoi(does[a][2]), i));
+                        }
                         do_retaliate_player(event_map[y][x]->curr_enemies[i]);
                     }
                     if(does[a][0] != "none") {
@@ -943,6 +963,8 @@ int Game::calc_damage_enemy_attack(int dmg, int idx) { //enemy attacking player
                 i--;
             }
             dmg-=dmgMitigated;
+        } else if(player->effects[i]->name == "vulnerable") { //add damage equal to magnitude of vulnerable
+            dmg+=player->effects[i]->magnitude;
         }
     }
 
@@ -962,10 +984,11 @@ void Game::do_retaliate_player(Enemy* en) { //so this shouldn't be here but idk 
         }
     }
     if(found) {
-        en->take_damage(player->effects[idx]->magnitude); //take damage equal to magnitude of defender retaliate.
+        cout << "RETALIATE FOUND from player" << endl;
+        en->take_damage(calc_damage_players_attack(player->effects[idx]->magnitude)); //take damage equal to magnitude of defender retaliate.
     }
 }
-void Game::do_retaliate_enemy(Enemy* en) { //so this shouldn't be here but idk of another solution
+void Game::do_retaliate_enemy(Enemy* en, int idx_enemy) { //so this shouldn't be here but idk of another solution
     bool found = false;
     int idx = 0;
     for(int i = 0; i < en->effects.size(); i++) {
@@ -975,7 +998,7 @@ void Game::do_retaliate_enemy(Enemy* en) { //so this shouldn't be here but idk o
         }
     }
     if(found) {
-        player->take_damage(en->effects[idx]->magnitude); //take damage equal to magnitude of defender retaliate.
+        player->take_damage(calc_damage_enemy_attack(en->effects[idx]->magnitude, idx_enemy)); //take damage equal to magnitude of defender retaliate.
     }
 }
 

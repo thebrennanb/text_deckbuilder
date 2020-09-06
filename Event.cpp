@@ -113,7 +113,7 @@ void Event::init_elite_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         card->init("Serrated edge|Deal 3 damage and add 3 bleed to the player's discard pile|a|0|;add_status_bleed|3|0|player|;none|0|3|player|;");
-        card->set_type("add_status");
+        card->set_type("attack");
         Card *card2 = new Card();
         card2->init("7 swords|Deal 2 damage, 7 times|a|0|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;");
         card2->set_type("attack");
@@ -132,14 +132,6 @@ void Event::init_elite_enemies() {
         Enemy *enemy1 = new Enemy();
         enemy1->init("Sword slinger", v, 70+randNn, 0);
         curr_enemies.push_back(enemy1);
-
-        vector<Card*> v2;
-        v2.push_back(card2);
-        v2.push_back(card);
-        randNn = rand()%(5)-2; //-2 to 2
-        Enemy *enemy2 = new Enemy();
-        enemy2->init("Illusionist", v2, 33+randNn, 0);
-        curr_enemies.push_back(enemy2);
 
         //think of one
     }
@@ -208,7 +200,7 @@ void Event::init_enemies() {
         v.push_back(card4);
         int randNn = rand()%(11)-5; //-5 to 5
         Enemy *enemy1 = new Enemy();
-        enemy1->init("Demon acolyte", v, 70+randNn, 0);
+        enemy1->init("Demon acolyte", v, 60+randNn, 0);
         curr_enemies.push_back(enemy1);
 
 
@@ -345,6 +337,7 @@ bool Event::shop_offer(Player *p) {
     int rem_dup = rand()%(2);
 
     bool leave = false;
+    bool rerolled = false;
     while(!leave) {
         cout << "You have " << p->coins << " coins left. What will you buy?" << endl;
         //print common cards
@@ -362,6 +355,11 @@ bool Event::shop_offer(Player *p) {
             cout << "Remove card ($" << removeCardCost << ")" << endl;
         } else { //1: duplicate card
             cout << "Duplicate card ($" << duplicateCardCost << ")" << endl;
+        }
+        if(rerolled) {
+            cout << "Reroll offers (sold out)" << endl;
+        } else {
+            cout << "Reroll offers ($" << reroll_cost << ")" << endl;
         }
 
         bool madeAction = false;
@@ -382,9 +380,29 @@ bool Event::shop_offer(Player *p) {
                         madeAction = true;
                         leave = true;
                     } else if(input[0] == "help") {
-                        cout << "Make an action:\n\"buy <type> <position>\" to buy something (either a relic, a card, or an upgrade-eg. buy card 0), \"buy relic <relic>\" to buy a relic, \"display deck\" to display your deck, \"leave\" to leave the shop, \"me\" to see everything about you." << endl;
+                        cout << "Make an action:\n\"buy <type> <position>\" to buy something (either a relic, a card, or an upgrade-eg. buy c 0), \"buy relic <relic>\" to buy a relic, \"display deck\" to display your deck, \"reroll\" to re-roll offers, \"leave\" to leave the shop, \"me\" to see everything about you." << endl;
                     } else if(input[0] == "me") {
                         p->display_player();
+                    } else if(input[0] == "reroll" && !rerolled) {
+                        if(p->coins >= reroll_cost) {
+                            commonCardList.clear();
+                            //3 random common cards
+                            commonCardList = get_cards_shop(p, "common", 3);
+
+                            rareCardList.clear();
+                            //2 random rare cards
+                            rareCardList = get_cards_shop(p, "rare", 2);
+                            if(rem_dup == 1) { //swap rem_dups
+                                rem_dup = 0;
+                            } else {
+                                rem_dup = 1;
+                            }
+                            p->coins-=reroll_cost;
+                            rerolled = true;
+                            madeAction = true;
+                        } else {
+                            cout << "You don't have enough coins." << endl;
+                        }
                     } else {
                         cout << "Could not understand." << endl;
                     }
@@ -452,7 +470,7 @@ bool Event::shop_offer(Player *p) {
                             cout << "You don't have enough coins." << endl;
                         }
                     } else if(input[0] == "buy") { //buy something
-                        if(input[1] == "card") {
+                        if(input[1] == "c") {
                             int pos = stoi(input[2]);
                             if(pos < commonCardList.size()+rareCardList.size()) {
                                 if(pos < commonCardList.size()) {

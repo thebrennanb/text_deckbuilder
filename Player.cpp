@@ -232,15 +232,10 @@ void Player::display_consume_pile() {
 
 void Player::display_player() {
     cout << "hp: " << hp << endl;
+    cout << "Max hp: " << max_hp << endl;
     cout << "Max stamina: " << max_stamina << endl;
     cout << "Number of cards drawn each turn: " << num_draw << endl;
     cout << "Number of coins: " << coins << endl;
-    if(!effects.empty()) {
-        cout << "Effects:" << endl;
-        for(int i=0; i<effects.size(); i++) {
-            cout << effects[i]->name << " " << effects[i]->magnitude << endl;
-        }
-    }
 }
 
 void Player::round_start() {
@@ -402,7 +397,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Enrage", card));
 
     Card *card1 = new Card();
-    card1->init("Embolden|Give yourself 1 stamina and 1 rage|Common|0|;rage|3|0|self|;stamina|1|0|self|;");
+    card1->init("Embolden|Gain 1 stamina and 1 rage|Common|0|;rage|3|0|self|;stamina|1|0|self|;");
     common_cards.push_back(card1);
     card_name_map.insert(std::make_pair("Embolden", card1));
 
@@ -483,7 +478,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Impenetrable armor", card16));
 
     Card *card17 = new Card();
-    card17->init("Know yourself|Give yourself 3 rage and 2 agility|Common|2|;rage|3|0|self|;agility|2|0|self|;");
+    card17->init("Know yourself|Gain 4 rage and 2 agility|Common|2|;rage|4|0|self|;agility|2|0|self|;");
     common_cards.push_back(card17);
     card_name_map.insert(std::make_pair("Know yourself", card17));
 
@@ -561,12 +556,12 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Brace", card31));
 
     Card *card32 = new Card(); //only to be added, don't add to list
-    card32->init("Power up|Your attacks for the next 2 turns deal double damage.|Common|3|;2x|2|0|self|;");
+    card32->init("Focus chi|Your attacks for the next 2 turns deal double damage.|Common|2|;2x|2|0|self|;");
     common_cards.push_back(card32);
     card_name_map.insert(std::make_pair("Power up", card32));
 
     Card *card33 = new Card(); //only to be added, don't add to list
-    card33->init("Force palm|Deal 5 damage and give the enemy 2 vulnerable.|Common|1|;vulnerable|2|0|choose|;none|0|5|choose|;");
+    card33->init("Force palm|Deal 5 damage and give the enemy 2 vulnerable.|Common|1|;none|0|5|choose|;vulnerable|2|0|choose|;");
     common_cards.push_back(card33);
     card_name_map.insert(std::make_pair("Force palm", card33));
 
@@ -586,10 +581,11 @@ void Player::init_all_common_cards() {
     card36->init("Twitch fibers|Gain 5 agility. Consume.|Common|0|;agility|5|0|self|;");
     card36->set_consume();
     common_cards.push_back(card36);
-    card_name_map.insert(std::make_pair("Dash", card36));
+    card_name_map.insert(std::make_pair("Twitch fibers", card36));
 
     Card *card37 = new Card(); //only to be added, don't add to list
-    card37->init("First move|Draw X cards and gain X stamina|Common|X|;draw|1|0|self|;stamina|1|0|self|;");
+    card37->init("First move|Draw X cards and gain X stamina. Consume.|Common|X|;draw|1|0|self|;stamina|1|0|self|;");
+    card37->set_consume();
     common_cards.push_back(card37);
     card_name_map.insert(std::make_pair("First move", card37));
 
@@ -639,7 +635,7 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Taunt", card4));
 
     Card *card5 = new Card();
-    card5->init("Iron will|Gain 15 armor. Retain your armor for 1 turn.|Rare|2|;armor|15|0|self|;retain armor|1|0|self|;");
+    card5->init("Iron will|Gain 15 armor. Retain your armor for 1 turn.|Rare|2|;armor|15|0|self|;retain_armor|1|0|self|;");
     rare_cards.push_back(card5);
     card_name_map.insert(std::make_pair("Iron will", card5));
 

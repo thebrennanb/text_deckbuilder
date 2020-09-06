@@ -595,7 +595,6 @@ void Game::combat() {
         play_player_turn();
 
         if(player->isDead()) { //idk maybe recoil dmg
-            cout << "You died" << endl;
             end_game = true;
             break;
         }
@@ -635,6 +634,11 @@ void Game::play_player_turn() {
         event_map[y][x]->display_enemies();
         player->display_hand();
         cout << "\nStamina left: " << player->stamina << ", hp left: " << player->hp << ". What will you do?" << endl;
+        if(!player->effects.empty()) {
+            for(int i=0; i<player->effects.size(); i++) {
+                cout << player->effects[i]->name << " " << player->effects[i]->magnitude << endl;
+            }
+        }
         bool madeAction = false;
         while(!madeAction) {
             if(player->hp == 0) {
@@ -660,7 +664,7 @@ void Game::play_player_turn() {
                         endTurn = true;
                     }
                     if(input[0] == "help") {
-                        cout << "Make an action:\n\"card <card>\" to play a card, \"display draw pile\" to view your draw pile, \"display discard pile\" to view your discard pile, \"display consume pile\" to view your consume pile, \"end turn\" to end your turn, \"me\" to see everything about you, \"enemies\" to see everything about the current enemies, \"target <enemy>\" to set a target." << endl;
+                        cout << "Make an action:\n\"c <card>\" to play a card, \"display draw pile\" to view your draw pile, \"display discard pile\" to view your discard pile, \"display consume pile\" to view your consume pile, \"end turn\" to end your turn, \"me\" to see everything about you, \"enemies\" to see everything about the current enemies, \"target <enemy>\" to set a target." << endl;
                     } else if(input[0] == "quit") {
                         playerQuit = true;
                         madeAction = true;
@@ -705,7 +709,7 @@ void Game::play_player_turn() {
                     } else if(input.size() > 2 && input[0] == "display" && input[1] == "consume" && input[2] == "pile") {
                         player->display_consume_pile();
 
-                    } else if(input[0] == "card") { //play card
+                    } else if(input[0] == "c") { //play card
                         if(stoi(input[1]) >= player->hand.size()) { //card does not exist.
                             cout << "Card does not exist." << endl;
                         } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {

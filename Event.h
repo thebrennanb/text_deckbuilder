@@ -37,6 +37,10 @@ public:
     vector<Card*> get_cards_shop(Player *p, string rarity, int numToSee);
     int rareCost = 70;
     int commonCost = 30;
+    int removeCardCost = 50;
+    int removeCardCostIncrease = 15;
+    int duplicateCardCost = 50;
+    int duplicateCardCostIncrease = 15;
 
     bool chance_offer(Player *p);
     bool get_treasure(Player *p);

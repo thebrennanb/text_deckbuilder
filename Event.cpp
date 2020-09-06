@@ -80,7 +80,7 @@ void Event::init_elite_enemies() {
         //illusionist
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Blinding flash|Add 3 daze to the player's discard pile|a|0|;add_status_daze|2|0|player|;");
+        card->init("Blinding flash|Add 2 daze to the player's discard pile|a|0|;add_status_daze|2|0|player|;");
         card->set_type("add_status");
         Card *card2 = new Card();
         card2->init("Trick|Deal 5 damage and add 1 daze to the player's discard pile|a|0|;none|0|5|player|;add_status_daze|1|0|player|;");
@@ -90,7 +90,47 @@ void Event::init_elite_enemies() {
 
         int randNn = rand()%(5)-2; //-2 to 2
         Enemy *enemy1 = new Enemy();
-        enemy1->init("Illusionist", v, 33+randNn, 0);
+        enemy1->init("Illusionist", v, 35+randNn, 0);
+        curr_enemies.push_back(enemy1);
+
+        vector<Card*> v2;
+        v2.push_back(card2);
+        v2.push_back(card);
+        randNn = rand()%(5)-2; //-2 to 2
+        Enemy *enemy2 = new Enemy();
+        enemy2->init("Illusionist", v2, 35+randNn, 0);
+
+        Enemy *enemy3 = new Enemy();
+        enemy3->init("Illusionist", v, 35+randNn, 0);
+        curr_enemies.push_back(enemy3);
+
+        curr_enemies.push_back(enemy2);
+
+
+    } else if(randN == 2) {
+
+        //illusionist
+        vector<Card*> v;
+        Card *card = new Card();
+        card->init("Serrated edge|Deal 3 damage and add 3 bleed to the player's discard pile|a|0|;add_status_bleed|3|0|player|;none|0|3|player|;");
+        card->set_type("add_status");
+        Card *card2 = new Card();
+        card2->init("7 swords|Deal 2 damage, 7 times|a|0|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;");
+        card2->set_type("attack");
+        Card *card3 = new Card();
+        card3->init("Pin|Deal 5 damage and add 1 bleed to the player's discard pile|a|0|;add_status_bleed|1|0|player|;none|0|5|player|;");
+        card3->set_type("attack");
+        Card *card4 = new Card();
+        card4->init("Hone swords|Gain 2 rage and 2 vulnerable|a|0|;rage|2|0|self|;vulnerable|2|0|self|;");
+        card4->set_type("attack");
+        v.push_back(card);
+        v.push_back(card2);
+        v.push_back(card3);
+        v.push_back(card4);
+
+        int randNn = rand()%(5)-2; //-2 to 2
+        Enemy *enemy1 = new Enemy();
+        enemy1->init("Sword slinger", v, 70+randNn, 0);
         curr_enemies.push_back(enemy1);
 
         vector<Card*> v2;
@@ -101,8 +141,6 @@ void Event::init_elite_enemies() {
         enemy2->init("Illusionist", v2, 33+randNn, 0);
         curr_enemies.push_back(enemy2);
 
-
-    } else if(randN == 2) {
         //think of one
     }
 
@@ -304,6 +342,8 @@ bool Event::shop_offer(Player *p) {
     //2 from: make 1 cheaper (20), +10 damage (only on contains none cards) (20), +20 and consume (only on contains none cards) (20), holdover (100), add +3 to effect(s) (80), remove consume (80),
 
     //either remove card or duplicate card
+    int rem_dup = rand()%(2);
+
     bool leave = false;
     while(!leave) {
         cout << "You have " << p->coins << " coins left. What will you buy?" << endl;
@@ -317,6 +357,13 @@ bool Event::shop_offer(Player *p) {
             vector<vector<string>> does = rareCardList[i]->split();
             cout << i+commonCardList.size() << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--  ($" << rareCost << ")" << endl;
         }
+
+        if(rem_dup == 0) { //0: remove card
+            cout << "Remove card ($" << removeCardCost << ")" << endl;
+        } else { //1: duplicate card
+            cout << "Duplicate card ($" << duplicateCardCost << ")" << endl;
+        }
+
         bool madeAction = false;
         while(!madeAction) {
             string temp;
@@ -346,6 +393,64 @@ bool Event::shop_offer(Player *p) {
                     if(input[0] == "display" && input[1] == "deck") {
                         p->display_deck();
 
+                    } else if(rem_dup == 0 && input[0] == "remove" && input[1] == "card") {
+                        if(p->coins >= removeCardCost) {
+                            cout << "Which card will you remove? (Or type back to go back.)" << endl;
+                            for(int aa = 0; aa < p->deck.size(); aa++) {
+                                vector<vector<string>> does = p->deck[aa]->split();
+                                cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                            }
+                            string pos;
+                            while(1) {
+                                cin >> pos;
+                                if(pos == "back") {
+                                    madeAction = true;
+                                    break;
+                                } else if(stoi(pos) < p->deck.size()) {
+                                    cout << "Removed " << p->deck[stoi(pos)]->split()[0][0] << endl;
+                                    p->deck.erase(p->deck.begin() + stoi(pos));
+                                    p->coins-=removeCardCost;
+                                    removeCardCost+=removeCardCostIncrease;
+                                    madeAction = true;
+                                    rem_dup = 1; //if removed a card, next option to duplicate a card (swap the options)
+                                    break;
+                                } else {
+                                    cout << "Choose a card in your deck." << endl;
+                                }
+                            }
+                        } else {
+                            cout << "You don't have enough coins." << endl;
+                        }
+                    } else if(rem_dup == 1 && input[0] == "duplicate" && input[1] == "card") {
+                        if(p->coins >= duplicateCardCost) {
+                            cout << "Which card will you duplicate? (Or type back to go back)" << endl;
+                            for(int aa = 0; aa < p->deck.size(); aa++) {
+                                vector<vector<string>> does = p->deck[aa]->split();
+                                cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                            }
+                            string pos;
+                            while(1) {
+                                cin >> pos;
+                                if(pos == "back") {
+                                    madeAction = true;
+                                    break;
+                                } else if(stoi(pos) < p->deck.size()) {
+                                    string name = p->deck[stoi(pos)]->split()[0][0];
+                                    cout << "name = " << p->card_name_map[name]->split()[0][0] << endl;
+                                    p->deck.push_back(p->card_name_map[name]); //doing it this way to not deal with
+                                    cout << "Duplicated " << name << endl;
+                                    p->coins-=duplicateCardCost;
+                                    duplicateCardCost+=duplicateCardCostIncrease;
+                                    madeAction = true;
+                                    rem_dup = 0; //if duplicated a card, next option to remove a card (swap the options)
+                                    break;
+                                } else {
+                                    cout << "Choose a card in your deck." << endl;
+                                }
+                            }
+                        } else {
+                            cout << "You don't have enough coins." << endl;
+                        }
                     } else if(input[0] == "buy") { //buy something
                         if(input[1] == "card") {
                             int pos = stoi(input[2]);

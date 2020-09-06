@@ -34,10 +34,14 @@ void Enemy::increment_card_pos() {
 }
 
 void Enemy::take_damage(int dmg) {
+    if(hp == 0) { //X times: don't do more times after enemy has died.
+        return;
+    }
     hp -= dmg;
     cout << name << " took " << dmg << " damage." << endl;
     if(hp < 0) {
         hp = 0;
+        cout << name << " was slain." << endl;
     }
 }
 

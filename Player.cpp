@@ -458,7 +458,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Counter", card11));
 
     Card *card12 = new Card();
-    card12->init("Big punch|Deal 30 damage|Common|4|;none|0|30|choose|;");
+    card12->init("Big punch|Deal 35 damage|Common|4|;none|0|35|choose|;");
     common_cards.push_back(card12);
     card_name_map.insert(std::make_pair("Big punch", card12));
 
@@ -519,7 +519,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Spoils of war", card23));*/
 
     Card *card24 = new Card(); //conditional
-    card24->init("Siege|Give all enemies 2X weak and 2X vulnerable.|Common|X|;weak|2|0|all enemies|;vulnerable|2|0|;");
+    card24->init("Siege|Give all enemies 2X weak and 2X vulnerable.|Common|X|;weak|2|0|all enemies|;vulnerable|2|0|all enemies|;");
     common_cards.push_back(card24);
     card_name_map.insert(std::make_pair("Siege", card24));
 
@@ -581,6 +581,22 @@ void Player::init_all_common_cards() {
     card35->set_consume();
     common_cards.push_back(card35);
     card_name_map.insert(std::make_pair("Dash", card35));
+
+    Card *card36 = new Card(); //only to be added, don't add to list
+    card36->init("Twitch fibers|Gain 5 agility. Consume.|Common|0|;agility|5|0|self|;");
+    card36->set_consume();
+    common_cards.push_back(card36);
+    card_name_map.insert(std::make_pair("Dash", card36));
+
+    Card *card37 = new Card(); //only to be added, don't add to list
+    card37->init("First move|Draw X cards and gain X stamina|Common|X|;draw|1|0|self|;stamina|1|0|self|;");
+    common_cards.push_back(card37);
+    card_name_map.insert(std::make_pair("First move", card37));
+
+    Card *card38 = new Card(); //only to be added, don't add to list
+    card38->init("Dodge and weave|Gain 2 armor and 2 agility|Common|1|;armor|2|0|self|;agility|2|0|self|;");
+    common_cards.push_back(card38);
+    card_name_map.insert(std::make_pair("First move", card38));
 
 
     Card *cardEx1 = new Card(); //only to be added, don't add to list
@@ -678,7 +694,7 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Calculated strike", card14));
 
     Card *card15 = new Card();
-    card15->init("Blood deal|Lose 5 hp and gain 2 energy.|Rare|1|;stamina|2|0|self|;none|0|4|self|;");
+    card15->init("Blood deal|Lose 5 hp and gain 2 stamina.|Rare|1|;stamina|2|0|self|;none|0|4|self|;");
     rare_cards.push_back(card15);
     card_name_map.insert(std::make_pair("Blood deal", card15));
 

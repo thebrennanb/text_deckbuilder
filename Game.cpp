@@ -885,7 +885,7 @@ void Game::play_enemy_turn() {
     int y = player_location.second;
 
     for(int i = 0; i < event_map[y][x]->curr_enemies.size(); i++) {
-        if(!event_map[y][x]->curr_enemies[i]->is_dead()) {
+        if(!event_map[y][x]->curr_enemies[i]->is_dead()) { //<shouldn't need this line
             vector<vector<string>> does = event_map[y][x]->curr_enemies[i]->attacks[event_map[y][x]->curr_enemies[i]->card_pos]->split();
             string name = does[0][0];
             cout << event_map[y][x]->curr_enemies[i]->name << " used " << name << "." << endl;

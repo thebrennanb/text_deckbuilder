@@ -56,6 +56,7 @@ public:             // Access specifier
     void add_effect(string name, int magnitude);
     void dec_magnitude(int idx);
     bool erase_effect_single_turn(int idx);
+    void discard_cards();
 
     void init_all_common_cards();
     void init_all_rare_cards();

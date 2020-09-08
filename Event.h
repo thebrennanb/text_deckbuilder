@@ -54,4 +54,19 @@ public:
     bool all_dead();
     void skip();
 
+    //upgrade stuff
+    vector<string> common_upgrades;
+    vector<string> rare_upgrades;
+    void init_upgrades();
+    int common_upgrade_number = 2;
+    int rare_upgrade_number = 1;
+    int common_upgrade_cost = 20;
+    int rare_upgrade_cost = 60;
+    int get_upgrade_cost(string upg);
+    map<int, int> print_cards_upgrade(string upg, Player *p);
+    vector<string> get_upgrade_list();
+
+
+    bool is_number(const std::string& s); //I don't wanna import game so I'm just gonna put this here
+
 };

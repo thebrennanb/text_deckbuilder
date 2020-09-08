@@ -54,5 +54,7 @@ public:             // Access specifier
 
     map<string, char> event_conv;
 
+    bool is_number(const std::string& s);
+
 };
 

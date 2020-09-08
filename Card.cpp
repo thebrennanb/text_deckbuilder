@@ -49,10 +49,95 @@ void Card::set_conditional(string cond) {
 
 
 
-
-
-
 }*/
+
+void Card::upgrade(string upg) {
+    //name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
+    if(upg == "holdover") {
+        holdover = true;
+    } else if(upg == "retain") {
+        retain = true;
+    } else if(upg == "remove consume|cost+1") {
+        consume = false;
+        size_t pos1 = 0;
+        size_t pos2 = 0;
+        string token;
+        string s = info;
+        int sumPos = 0;
+
+        pos1 = s.find(d1);
+        for(int i = 0; i < 4; i++) {
+            pos2 = s.find(d2);
+            token = s.substr(0, pos2);
+            s.erase(0, pos2 + 1);
+            sumPos+=(pos2+1);
+            if(i == 3) {
+                int staminaCost = info[sumPos-2]-48; //convert char to int
+                staminaCost+=1;
+                info[sumPos-2] = ('0' + staminaCost);
+            }
+        }
+    } else if(upg == "damage+10") { //This will deal an extra 20X damage, maybe don't want this
+        if(card_type == "attack") {
+            info+="none|0|10|choose|;";
+        } else if(card_type == "attack-closest") {
+            info+="none|0|10|closest enemy|;";
+        }
+        pos1 = s.find(d1);
+        for(int i = 0; i < 4; i++) {
+            pos2 = s.find(d2);
+            token = s.substr(0, pos2);
+            s.erase(0, pos2 + 1);
+            sumPos+=(pos2+1);
+            if(i == 1) { //change the description
+                cout << info[sumPos-2] << endl;
+                int staminaCost = info[sumPos-2]-48; //convert char to int
+                staminaCost+=1;
+                info[sumPos-2] = ('0' + staminaCost);
+            }
+        }
+    } else if(upg == "damage+20|consume") { //This will deal an extra 20X damage, maybe don't want this
+        if(card_type == "attack") {
+            info+="none|0|20|choose|;";
+        } else if(card_type == "attack-closest") {
+            info+="none|0|20|closest enemy|;";
+        }
+        consume = true;
+        pos1 = s.find(d1);
+        for(int i = 0; i < 4; i++) {
+            pos2 = s.find(d2);
+            token = s.substr(0, pos2);
+            s.erase(0, pos2 + 1);
+            sumPos+=(pos2+1);
+            if(i == 1) { //change the description
+                cout << info[sumPos-2] << endl;
+                int staminaCost = info[sumPos-2]-48; //convert char to int
+                staminaCost+=1;
+                info[sumPos-2] = ('0' + staminaCost);
+            }
+        }
+    } else if(upg == "cost-1") {
+        size_t pos1 = 0;
+        size_t pos2 = 0;
+        string token;
+        string s = info;
+        int sumPos = 0;
+
+        pos1 = s.find(d1);
+        for(int i = 0; i < 4; i++) {
+            pos2 = s.find(d2);
+            token = s.substr(0, pos2);
+            cout << i << " " << sumPos << " " << token << endl;
+            s.erase(0, pos2 + 1);
+            sumPos+=(pos2+1);
+            if(i == 3) {
+                int staminaCost = info[sumPos-2]-48; //convert char to int
+                staminaCost-=1;
+                info[sumPos-2] = ('0' + staminaCost);
+            }
+        }
+    }
+}
 
 vector<vector<string>> Card::split() {
     size_t pos1 = 0;

@@ -2,7 +2,6 @@
 #include "Enemy.h"
 #include "Relic.h"
 #include "Card.h"
-
 #include "Event.h"
 #include <iostream>
 #include<sstream>
@@ -27,6 +26,7 @@ void Event::init(string classif, int num_enemies) {
         is_chance = true;
     } else if(classif == "shop") {
         is_shop = true;
+        init_upgrades();
     } else if(classif == "treasure") { //else
         is_treasure = true;
     } else if(classif == "boss") { //else
@@ -332,6 +332,7 @@ bool Event::shop_offer(Player *p) {
     vector<Card*> rareCardList = get_cards_shop(p, "rare", 2);
 
     //2 from: make 1 cheaper (20), +10 damage (only on contains none cards) (20), +20 and consume (only on contains none cards) (20), holdover (100), add +3 to effect(s) (80), remove consume (80),
+    vector<string> upgradeList = get_upgrade_list();
 
     //either remove card or duplicate card
     int rem_dup = rand()%(2);
@@ -356,6 +357,24 @@ bool Event::shop_offer(Player *p) {
         } else { //1: duplicate card
             cout << "Duplicate card ($" << duplicateCardCost << ")" << endl;
         }
+
+        cout << "Upgrade a card:" << endl;
+        for(int i = 0; i < upgradeList.size(); i++) {
+            if(upgradeList[i] == "cost-1") {
+                cout << i << ":   Decrease the cost of a card by 1 ($" << common_upgrade_cost << ")" << endl;
+            } else if(upgradeList[i] == "damage+20|consume") {
+                cout << i << ":   Increase the damage of a card by 20 and give it consume ($" << common_upgrade_cost << ")" << endl;
+            } else if(upgradeList[i] == "damage+10") {
+                cout << i << ":   Increase the damage of a card by 10 ($" << common_upgrade_cost << ")" << endl;
+            } else if(upgradeList[i] == "remove consume|cost+1") {
+                cout << i << ":   Remove consume from a card and increase the cost by 1 ($" << rare_upgrade_cost << ")" << endl;
+            } else if(upgradeList[i] == "holdover") {
+                cout << i << ":   Give a card holdover ($" << rare_upgrade_cost << ")" << endl;
+            }  else if(upgradeList[i] == "retain") {
+                cout << i << ":   Give a card retain ($" << rare_upgrade_cost << ")" << endl;
+            }
+        }
+
         if(rerolled) {
             cout << "Reroll offers (sold out)" << endl;
         } else {
@@ -380,7 +399,7 @@ bool Event::shop_offer(Player *p) {
                         madeAction = true;
                         leave = true;
                     } else if(input[0] == "help") {
-                        cout << "Make an action:\n\"buy <type> <position>\" to buy something (either a relic, a card, or an upgrade-eg. buy c 0), \"buy relic <relic>\" to buy a relic, \"display deck\" to display your deck, \"reroll\" to re-roll offers, \"leave\" to leave the shop, \"me\" to see everything about you." << endl;
+                        cout << "Make an action:\n\"buy <type> <position>\" to buy something (either a relic, an upgrade, or a card-eg. buy c 0), \"buy relic <relic>\" to buy a relic, \"display deck\" to display your deck, \"reroll\" to re-roll offers, \"remove\" or \"duplicate\" a card (eg. remove card), \"leave\" to leave the shop, \"me\" to see everything about you." << endl;
                     } else if(input[0] == "me") {
                         p->display_player();
                     } else if(input[0] == "reroll" && !rerolled) {
@@ -397,6 +416,10 @@ bool Event::shop_offer(Player *p) {
                             } else {
                                 rem_dup = 1;
                             }
+
+                            upgradeList.clear();
+                            upgradeList = get_upgrade_list();
+
                             p->coins-=reroll_cost;
                             rerolled = true;
                             madeAction = true;
@@ -424,16 +447,20 @@ bool Event::shop_offer(Player *p) {
                                 if(pos == "back") {
                                     madeAction = true;
                                     break;
-                                } else if(stoi(pos) < p->deck.size()) {
-                                    cout << "Removed " << p->deck[stoi(pos)]->split()[0][0] << endl;
-                                    p->deck.erase(p->deck.begin() + stoi(pos));
-                                    p->coins-=removeCardCost;
-                                    removeCardCost+=removeCardCostIncrease;
-                                    madeAction = true;
-                                    rem_dup = 1; //if removed a card, next option to duplicate a card (swap the options)
-                                    break;
+                                } else if(!is_number(pos)) {
+                                    cout << "Choose a card based on its index." << endl;
                                 } else {
-                                    cout << "Choose a card in your deck." << endl;
+                                    if(stoi(pos) < p->deck.size()) {
+                                        cout << "Removed " << p->deck[stoi(pos)]->split()[0][0] << endl;
+                                        p->deck.erase(p->deck.begin() + stoi(pos));
+                                        p->coins-=removeCardCost;
+                                        removeCardCost+=removeCardCostIncrease;
+                                        madeAction = true;
+                                        rem_dup = 1; //if removed a card, next option to duplicate a card (swap the options)
+                                        break;
+                                    } else {
+                                        cout << "Choose a card in your deck." << endl;
+                                    }
                                 }
                             }
                         } else {
@@ -452,18 +479,22 @@ bool Event::shop_offer(Player *p) {
                                 if(pos == "back") {
                                     madeAction = true;
                                     break;
-                                } else if(stoi(pos) < p->deck.size()) {
-                                    string name = p->deck[stoi(pos)]->split()[0][0];
-                                    cout << "name = " << p->card_name_map[name]->split()[0][0] << endl;
-                                    p->deck.push_back(p->card_name_map[name]); //doing it this way to not deal with
-                                    cout << "Duplicated " << name << endl;
-                                    p->coins-=duplicateCardCost;
-                                    duplicateCardCost+=duplicateCardCostIncrease;
-                                    madeAction = true;
-                                    rem_dup = 0; //if duplicated a card, next option to remove a card (swap the options)
-                                    break;
+                                } else if(!is_number(pos)) {
+                                    cout << "Choose a card based on its index." << endl;
                                 } else {
-                                    cout << "Choose a card in your deck." << endl;
+                                    if(stoi(pos) < p->deck.size()) {
+                                        string name = p->deck[stoi(pos)]->split()[0][0];
+                                        //cout << "name = " << p->card_name_map[name]->split()[0][0] << endl; //test
+                                        p->deck.push_back(p->card_name_map[name]); //doing it this way to not deal with
+                                        cout << "Duplicated " << name << endl;
+                                        p->coins-=duplicateCardCost;
+                                        duplicateCardCost+=duplicateCardCostIncrease;
+                                        madeAction = true;
+                                        rem_dup = 0; //if duplicated a card, next option to remove a card (swap the options)
+                                        break;
+                                    } else {
+                                        cout << "Choose a card in your deck." << endl;
+                                    }
                                 }
                             }
                         } else {
@@ -471,34 +502,74 @@ bool Event::shop_offer(Player *p) {
                         }
                     } else if(input[0] == "buy") { //buy something
                         if(input[1] == "c") {
-                            int pos = stoi(input[2]);
-                            if(pos < commonCardList.size()+rareCardList.size()) {
-                                if(pos < commonCardList.size()) {
-                                    if(p->coins >= commonCost) {
-                                        cout << "Added a " << commonCardList[pos]->split()[0][0] << " to your deck." << endl;
-                                        p->deck.push_back(commonCardList[pos]);
-                                        commonCardList.erase(commonCardList.begin() + pos);
-                                        p->coins-=commonCost;
-                                        madeAction = true;
-                                    } else  {
-                                        cout << "You don't have enough coins." << endl;
-                                    }
-                                } else {
-                                    if(p->coins >= rareCost) {
-                                        cout << "Added a " << rareCardList[pos-commonCardList.size()]->split()[0][0] << " to your deck." << endl;
-                                        p->deck.push_back(rareCardList[pos-commonCardList.size()]);
-                                        rareCardList.erase(rareCardList.begin() + pos-commonCardList.size());
-                                        p->coins-=rareCost;
-                                        madeAction = true;
+                            if(!is_number(input[2])) {
+                                cout << "Choose a card based on its index." << endl;
+                            } else {
+                                int pos = stoi(input[2]);
+                                if(pos < commonCardList.size()+rareCardList.size()) {
+                                    if(pos < commonCardList.size()) {
+                                        if(p->coins >= commonCost) {
+                                            cout << "Added a " << commonCardList[pos]->split()[0][0] << " to your deck." << endl;
+                                            p->deck.push_back(commonCardList[pos]);
+                                            commonCardList.erase(commonCardList.begin() + pos);
+                                            p->coins-=commonCost;
+                                            madeAction = true;
+                                        } else  {
+                                            cout << "You don't have enough coins." << endl;
+                                        }
                                     } else {
-                                        cout << "You don't have enough coins." << endl;
+                                        if(p->coins >= rareCost) {
+                                            cout << "Added a " << rareCardList[pos-commonCardList.size()]->split()[0][0] << " to your deck." << endl;
+                                            p->deck.push_back(rareCardList[pos-commonCardList.size()]);
+                                            rareCardList.erase(rareCardList.begin() + pos-commonCardList.size());
+                                            p->coins-=rareCost;
+                                            madeAction = true;
+                                        } else {
+                                            cout << "You don't have enough coins." << endl;
+                                        }
                                     }
                                 }
                             }
                         } else if(input[1] == "relic") {
 
                         } else if(input[1] == "upgrade") {
-
+                            if(!is_number(input[2])) {
+                                cout << "Choose an upgrade based on its index (eg: buy upgrade 0)." << endl;
+                            } else {
+                                int upgradeNum = stoi(input[2]);
+                                if(upgradeNum < upgradeList.size()) {
+                                    if(p->coins >= get_upgrade_cost(upgradeList[upgradeNum])) {
+                                        cout << "Which card will you upgrade? (Or type back to go back.)" << endl;
+                                        map<int, int> card_convs = print_cards_upgrade(upgradeList[upgradeNum], p);
+                                        string pos;
+                                        while(1) {
+                                            cin >> pos;
+                                            if(pos == "back") {
+                                                madeAction = true;
+                                                break;
+                                            } else if(!is_number(pos)) {
+                                                cout << "Choose a card based on its index." << endl;
+                                            } else {
+                                                map<int,int>::iterator it = card_convs.find(stoi(pos));
+                                                if(it == card_convs.end()) {
+                                                    cout << "Choose an existing card." << endl;
+                                                } else {
+                                                    p->coins-=get_upgrade_cost(upgradeList[upgradeNum]);
+                                                    cout << "Upgraded " << p->deck[it->second]->split()[0][0] << endl;
+                                                    p->deck[it->second]->upgrade(upgradeList[upgradeNum]);
+                                                    madeAction = true;
+                                                    upgradeList.erase(upgradeList.begin() + upgradeNum); //remove this upgrade from the list
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        cout << "You don't have enough coins." << endl;
+                                    }
+                                } else {
+                                    cout << "Choose an existing upgrade." << endl;
+                                }
+                            }
                         }
 
                     } else {
@@ -542,6 +613,77 @@ vector<Card*> Event::get_cards_shop(Player *p, string rarity, int numToSee) {
     }
     return cards;
 }
+int Event::get_upgrade_cost(string upg) {
+    if(upg == "cost-1" || upg == "damage+20|consume" || upg == "damage+10") {
+        return common_upgrade_cost;
+    } else {
+        return rare_upgrade_cost;
+    }
+}
+map<int, int> Event::print_cards_upgrade(string upg, Player *p) {
+    int runningNum = 0;
+    map<int, int> card_convs;
+    //v these 2 can only apply to certain cards
+    if(upg == "cost-1") { //bad way of doing this but oh well
+        for(int aa = 0; aa < p->deck.size(); aa++) {
+            vector<vector<string>> does = p->deck[aa]->split();
+            if(does[0][3] != "X" && stoi(does[0][3]) > 0) { //only print cards with cost > 1
+                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
+                runningNum++;
+            }
+        }
+    } else if(upg == "remove consume|cost+1") { //bad way of doing this but oh well
+        for(int aa = 0; aa < p->deck.size(); aa++) {
+            if(p->deck[aa]->consume) { //only print cards with consume
+                vector<vector<string>> does = p->deck[aa]->split();
+                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
+                runningNum++;
+            }
+        }
+    } else if(upg == "damage+20|consume" || upg == "damage+10") {
+        for(int aa = 0; aa < p->deck.size(); aa++) {
+            if(p->deck[aa]->card_type == "attack" || p->deck[aa]->card_type == "attack-closest") { //only print cards that are attacks
+                vector<vector<string>> does = p->deck[aa]->split();
+                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
+                runningNum++;
+            }
+        }
+    } else {
+        for(int aa = 0; aa < p->deck.size(); aa++) {
+            vector<vector<string>> does = p->deck[aa]->split();
+            cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+            card_convs.insert(std::make_pair(aa, aa)); // the card index printed :: the actual card index in deck
+        }
+    }
+    return card_convs;
+}
+vector<string> Event::get_upgrade_list() {
+    vector<int> upgradesGot;
+    vector<string> rtn;
+    for(int i = 0; i < common_upgrade_number; i++) {
+        int randN = rand()%(common_upgrades.size());
+        if(std::find(upgradesGot.begin(), upgradesGot.end(), randN) == upgradesGot.end()) {
+            rtn.push_back(common_upgrades[randN]);
+            upgradesGot.push_back(randN);
+        } else {
+            i--;
+        }
+    }
+    upgradesGot.clear();
+    for(int i = 0; i < rare_upgrade_number; i++) {
+        int randN = rand()%(rare_upgrades.size());
+        if(std::find(upgradesGot.begin(), upgradesGot.end(), randN) == upgradesGot.end()) {
+            rtn.push_back(rare_upgrades[randN]);
+            upgradesGot.push_back(randN);
+        } else {
+            i--;
+        }
+    }
+    return rtn;
+}
 
 
 bool Event::chance_offer(Player *p) {
@@ -554,4 +696,21 @@ bool Event::get_treasure(Player *p) {
 }
 bool Event::boss_reward(Player *p) {
     //p->add_to_coins(200);
+}
+
+void Event::init_upgrades() {
+    //common = decrease cost by 1, +20 dmg and consume, +10 dmg, efficacy+1 (maybe later)
+    //rare = remove consume and increase cost by 1, holdover, retain, efficacy*2 (maybe later)
+    common_upgrades.push_back("cost-1");
+    common_upgrades.push_back("damage+20|consume");
+    common_upgrades.push_back("damage+10");
+
+    rare_upgrades.push_back("remove consume|cost+1");
+    rare_upgrades.push_back("holdover");
+    rare_upgrades.push_back("retain");
+}
+
+bool Event::is_number(const std::string& s) {
+    return !s.empty() && std::find_if(s.begin(),
+        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }

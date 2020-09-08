@@ -687,11 +687,15 @@ void Game::play_player_turn() {
                             player->target = -1;
                             cout << "Setting target: self.";
                         } else {
-                            if(stoi(input[1]) >= event_map[y][x]->curr_enemies.size()) {
-                                cout << "Choose an existing enemy." << endl;
+                            if(!is_number(input[1])) {
+                                cout << "Choose an enemy by its index." << endl;
                             } else {
-                                player->target = stoi(input[1]);
-                                cout << "Setting target enemy: " << event_map[y][x]->curr_enemies[stoi(input[1])]->name;
+                                if(stoi(input[1]) >= event_map[y][x]->curr_enemies.size()) {
+                                    cout << "Choose an existing enemy." << endl;
+                                } else {
+                                    player->target = stoi(input[1]);
+                                    cout << "Setting target enemy: " << event_map[y][x]->curr_enemies[stoi(input[1])]->name;
+                                }
                             }
                         }
                     } else if(input.size() > 2 && input[0] == "display" && input[1] == "draw" && input[2] == "pile") {
@@ -710,25 +714,29 @@ void Game::play_player_turn() {
                         player->display_consume_pile();
 
                     } else if(input[0] == "c") { //play card
-                        if(stoi(input[1]) >= player->hand.size()) { //card does not exist.
-                            cout << "Card does not exist." << endl;
-                        } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {
-                            cout << "Set a target first." << endl;
-                        } else if(player->hand[stoi(input[1])]->split()[0][3] != "X" && player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
-
-                            cout << "Not enough stamina." << endl;
+                        if(!is_number(input[1])) {
+                            cout << "Choose a card based on its position." << endl;
                         } else {
-                            madeAction = true;
+                            if(stoi(input[1]) >= player->hand.size()) { //card does not exist.
+                                cout << "Card does not exist." << endl;
+                            } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {
+                                cout << "Set a target first." << endl;
+                            } else if(player->hand[stoi(input[1])]->split()[0][3] != "X" && player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
 
-                            //play card and do effects and stuff here
-                            play_card(stoi(input[1]));
-                            //
-                            event_map[y][x]->check_dead();
-                            if(event_map[y][x]->all_dead()) {
-                                endTurn = true;
-                                break;
+                                cout << "Not enough stamina." << endl;
+                            } else {
+                                madeAction = true;
+
+                                //play card and do effects and stuff here
+                                play_card(stoi(input[1]));
+                                //
+                                event_map[y][x]->check_dead();
+                                if(event_map[y][x]->all_dead()) {
+                                    endTurn = true;
+                                    break;
+                                }
+
                             }
-
                         }
                     } else {
                         cout << "Could not understand." << endl;
@@ -826,6 +834,8 @@ void Game::play_card(int idx) {
         player->discard_pile.push_back(player->hand[idx]); //put card in discard pile
         player->hand.erase(player->hand.begin()+idx); //remove card from hand.
     }
+
+    player->discard_cards(); //will discard if gained discard effect
 
 }
 
@@ -1080,4 +1090,9 @@ void Game::inc_player_effects() {
             }
         }
     }
+}
+
+bool Game::is_number(const std::string& s) {
+    return !s.empty() && std::find_if(s.begin(),
+        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }

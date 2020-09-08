@@ -39,7 +39,7 @@ void Enemy::take_damage(int dmg) {
     }
     hp -= dmg;
     cout << name << " took " << dmg << " damage." << endl;
-    if(hp < 0) {
+    if(hp <= 0) {
         hp = 0;
         cout << name << " was slain." << endl;
     }

@@ -22,12 +22,13 @@ void Player::init_deck() { //set initial cards
     for(int i = 0; i < 5; i++) {
         Card *card = new Card();
         //name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
-        card->init("Fireball|Cast a fireball at an enemy, dealing 5 damage|Basic|1|;none|0|5|choose|;");
+        card->init("Fire fist|Deal 5 damage|Basic|1|;none|0|5|choose|;");
+        card->set_type("attack");
         deck.push_back(card);
     }
     for(int i = 0; i < 5; i++) {
         Card *card = new Card();
-        card->init("Defend|Don 5 armor|Basic|1|;armor|5|0|self|;");
+        card->init("Defend|Gain 5 armor|Basic|1|;armor|5|0|self|;");
         deck.push_back(card);
     }
     init_all_common_cards();
@@ -38,9 +39,11 @@ void Player::init_deck_before_combat() {
     hand.clear();
     discard_pile.clear();
     draw_pile.clear();
-    discard_pile.clear();
-    for(int i = 0; i < deck.size(); i++) {
-        draw_pile.push_back(deck[i]);
+    vector<Card*> deckCopy = deck;
+    auto rng = std::default_random_engine {};
+    std::shuffle(deckCopy.begin(), deckCopy.end(), rng); //at the start of battle shuffle the deck and then add all to draw_pile.
+    for(int i = 0; i < deckCopy.size(); i++) {
+        draw_pile.push_back(deckCopy[i]);
     }
 }
 
@@ -239,17 +242,11 @@ void Player::display_player() {
 }
 
 void Player::round_start() {
-    std::random_shuffle(draw_pile.begin(), draw_pile.end());
     draw_cards(num_draw);
     stamina = max_stamina;
 }
 
 void Player::draw_cards(int num_to_draw) {
-    /*for(int i = 0; i < hand.size(); i++) { //when the player draws cards, put all cards in hand into the discard pile.
-        discard_pile.push_back(hand[i]);
-    }
-    hand.clear();*/
-    //
     for(int i = 0; i < num_to_draw; i++) {
         if(hand.size() > max_hand_size) {
             cout << "Reached max hand size of " << max_hand_size << endl;
@@ -264,7 +261,44 @@ void Player::draw_cards(int num_to_draw) {
             }
             discard_pile.clear();
             auto rng = std::default_random_engine {};
-            std::shuffle(std::begin(draw_pile), std::end(draw_pile), rng);
+            std::shuffle(draw_pile.begin(), draw_pile.end(), rng); //randomly shuffle the draw pile
+        }
+    }
+}
+
+void Player::discard_cards() { //discards cards if discard in effects
+    for(int aa = 0; aa < effects.size(); aa++) {
+        if(effects[aa]->name == "discard") {
+            for(int i = 0; i < effects[aa]->magnitude; i++) {
+                if(hand.size() == 0) { //nothing to discard
+                    break;
+                } else if(hand.size() == 1) {
+                    cout << "Discarded " << hand[0]->split()[0][0] << "." << endl;
+                    discard_pile.push_back(hand[0]); //move card to discard pile
+                    hand.erase(hand.begin());
+                } else {
+                    bool act = false;
+                    cout << "Choose a card to discard." << endl;
+                    for(int j = 0; j < hand.size(); j++) {
+                        vector<vector<string>> does = hand[j]->split();
+                        cout << to_string(j) << "  (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                    }
+                    while(!act) { //TODO what if user doesn't input an int
+                        int idx;
+                        cin >> idx;
+                        if(idx < hand.size()) {
+                            cout << "Discarded " << hand[idx]->split()[0][0] << "." << endl;
+                            discard_pile.push_back(hand[idx]); //move card to discard pile
+                            hand.erase(hand.begin()+idx);
+                            act = true;
+                        } else {
+                            cout << "Choose an existing card." << endl;
+                        }
+                    }
+                }
+            }
+            effects.erase(effects.begin() + aa); //remove this effect
+            return;
         }
     }
 }
@@ -375,7 +409,7 @@ void Player::dec_magnitude(int idx) { //might change if relic: "effect x no long
 bool Player::erase_effect_single_turn(int idx) {
     bool retain_armor = false;
     for(int i = 0; i < effects.size(); i++) {
-        if(effects[i]->name == "retain_armor") {
+        if(effects[i]->name == "retain armor") {
             retain_armor = true;
         }
     }
@@ -395,6 +429,7 @@ void Player::init_all_common_cards() {
     card->init("Enrage|Gain 3 rage|Common|1|;rage|3|0|self|;");
     common_cards.push_back(card);
     card_name_map.insert(std::make_pair("Enrage", card));
+    card->set_type("attack");
 
     Card *card1 = new Card();
     card1->init("Embolden|Gain 1 stamina and 1 rage|Common|0|;rage|3|0|self|;stamina|1|0|self|;");
@@ -407,9 +442,10 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Know your enemy", card2));
 
     Card *card3 = new Card();
-    card3->init("Hack and slash|Deal 3 damage 3 times|Common|2|;none|0|3|choose|;none|0|3|choose|;none|0|3|choose|;");
+    card3->init("Hack and slash|Deal 3 damage, 4 times|Common|2|;none|0|3|choose|;none|0|3|choose|;none|0|3|choose|;none|0|3|choose|;");
     common_cards.push_back(card3);
     card_name_map.insert(std::make_pair("Hack and slash", card3));
+    card3->set_type("attack");
 
     Card *card4 = new Card();
     card4->init("Flame cuffs|Gain 4 retaliate|Common|2|;retaliate|4|0|self|;");
@@ -420,6 +456,7 @@ void Player::init_all_common_cards() {
     card5->init("Ignite|Deal 10 damage|Common|1|;none|0|10|choose|;");
     common_cards.push_back(card5);
     card_name_map.insert(std::make_pair("Ignite", card5));
+    card5->set_type("attack");
 
     Card *card6 = new Card();
     card6->init("Feint|Gain 4 armor and 1 agility|Common|1|;armor|4|0|self|;agility|1|0|self|;");
@@ -435,6 +472,7 @@ void Player::init_all_common_cards() {
     card8->init("Cripple|Deal 5 damage, apply 2 weak, and apply 2 vulnerable|Common|2|;none|0|5|choose|;weak|2|0|choose|;vulnerable|2|0|choose|;");
     common_cards.push_back(card8);
     card_name_map.insert(std::make_pair("Cripple", card8));
+    card8->set_type("attack");
 
     /*//SET CONDITIONAL
     Card *card9 = new Card();
@@ -443,7 +481,7 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("Devour", card9));*/
 
     Card *card10 = new Card();
-    card10->init("Strategize|Draw 2 cards|Common|1|;draw|2|0|self|;");
+    card10->init("Strategize|Draw 2 cards and then discard 2 cards|Common|0|;draw|2|0|self|;discard|2|0|self|;");
     common_cards.push_back(card10);
     card_name_map.insert(std::make_pair("Strategize", card10));
 
@@ -456,11 +494,13 @@ void Player::init_all_common_cards() {
     card12->init("Big punch|Deal 35 damage|Common|4|;none|0|35|choose|;");
     common_cards.push_back(card12);
     card_name_map.insert(std::make_pair("Big punch", card12));
+    card12->set_type("attack");
 
     Card *card13 = new Card();
     card13->init("Jab|Deal 3 damage|Common|0|;none|0|3|choose|;");
     common_cards.push_back(card13);
     card_name_map.insert(std::make_pair("Jab", card13));
+    card13->set_type("attack");
 
     Card *card14 = new Card();
     card14->init("War cry|Gain 5 rage and give all enemies 5 weak and 5 vulnerable|Common|3|;rage|5|0|self|;vulnerable|5|0|all enemies|;weak|5|0|all enemies|;");
@@ -468,12 +508,12 @@ void Player::init_all_common_cards() {
     card_name_map.insert(std::make_pair("War cry", card14));
 
     Card *card15 = new Card();
-    card15->init("What doesn't kill you|Lose 5 hp and gain 5 rage|Common|1|;none|0|5|self|;rage|5|0|self|;");
+    card15->init("What doesn't kill you|Lose 3 hp and gain 7 rage|Common|1|;none|0|3|self|;rage|7|0|self|;");
     common_cards.push_back(card15);
     card_name_map.insert(std::make_pair("What doesn't kill you", card15));
 
     Card *card16 = new Card();
-    card16->init("Impenetrable armor|Retain your armor for 1 turn.|Common|1|;retain_armor|1|0|self|;");
+    card16->init("Impenetrable armor|Retain your armor for 1 turn.|Common|1|;retain armor|1|0|self|;");
     common_cards.push_back(card16);
     card_name_map.insert(std::make_pair("Impenetrable armor", card16));
 
@@ -486,11 +526,13 @@ void Player::init_all_common_cards() {
     card18->init("Close combat|Deal 10 damage to the closest enemy X times.|Common|X|;none|0|10|closest enemy|;");
     common_cards.push_back(card18);
     card_name_map.insert(std::make_pair("Close combat", card18));
+    card18->set_type("attack-closest");
 
     Card *card19 = new Card();
     card19->init("Uppercut|Deal 20 damage to the closest enemy and gain 2 vulnerable.|Common|1|;none|0|20|closest enemy|;vulnerable|2|0|self|;");
     common_cards.push_back(card19);
     card_name_map.insert(std::make_pair("Uppercut", card19));
+    card19->set_type("attack-closest");
 
     /*//conditional
     Card *card20 = new Card();
@@ -502,11 +544,13 @@ void Player::init_all_common_cards() {
     card21->init("Hook|Deal 15 damage to the closest enemy.|Common|1|;none|0|15|closest enemy|;");
     common_cards.push_back(card21);
     card_name_map.insert(std::make_pair("Hook", card21));
+    card21->set_type("attack-closest");
 
     Card *card22 = new Card();
     card22->init("Grab|Deal 3 damage to the closest enemy and give it 2 vulnerable.|Common|1|;none|0|3|closest enemy|;vulnerable|2|0|closest enemy|;");
     common_cards.push_back(card22);
     card_name_map.insert(std::make_pair("Grab", card22));
+    card22->set_type("attack-closest");
 
     /*Card *card23 = new Card(); //conditional
     card23->init("Spoils of war|If an enemy has died this turn, draw 2 cards.|Common|0|;draw|2|0|self|;");
@@ -553,21 +597,21 @@ void Player::init_all_common_cards() {
     Card *card31 = new Card(); //only to be added, don't add to list
     card31->init("Consecutive strikes|Add 2 pummels to your hand.|Common|1|;add_card=Pummel|2|0|self|;");
     common_cards.push_back(card31);
-    card_name_map.insert(std::make_pair("Brace", card31));
+    card_name_map.insert(std::make_pair("Consecutive strikes", card31));
 
     Card *card32 = new Card(); //only to be added, don't add to list
     card32->init("Focus chi|Your attacks for the next 2 turns deal double damage.|Common|2|;2x|2|0|self|;");
     common_cards.push_back(card32);
-    card_name_map.insert(std::make_pair("Power up", card32));
+    card_name_map.insert(std::make_pair("Focus chi", card32));
 
     Card *card33 = new Card(); //only to be added, don't add to list
     card33->init("Force palm|Deal 5 damage and give the enemy 2 vulnerable.|Common|1|;none|0|5|choose|;vulnerable|2|0|choose|;");
     common_cards.push_back(card33);
     card_name_map.insert(std::make_pair("Force palm", card33));
+    card33->set_type("attack");
 
     Card *card34 = new Card(); //only to be added, don't add to list
-    card34->init("Like a feather|Gain 4 agility. Consume.|Common|1|;agility|4|0|self|;");
-    card34->set_consume();
+    card34->init("Like a feather|Gain 3 agility.|Common|1|;agility|5|0|self|;");
     common_cards.push_back(card34);
     card_name_map.insert(std::make_pair("Like a feather", card34));
 
@@ -577,22 +621,38 @@ void Player::init_all_common_cards() {
     common_cards.push_back(card35);
     card_name_map.insert(std::make_pair("Dash", card35));
 
-    Card *card36 = new Card(); //only to be added, don't add to list
+    Card *card36 = new Card();
     card36->init("Twitch fibers|Gain 5 agility. Consume.|Common|0|;agility|5|0|self|;");
     card36->set_consume();
     common_cards.push_back(card36);
     card_name_map.insert(std::make_pair("Twitch fibers", card36));
 
-    Card *card37 = new Card(); //only to be added, don't add to list
+    Card *card37 = new Card();
     card37->init("First move|Draw X cards and gain X stamina. Consume.|Common|X|;draw|1|0|self|;stamina|1|0|self|;");
     card37->set_consume();
     common_cards.push_back(card37);
     card_name_map.insert(std::make_pair("First move", card37));
 
-    Card *card38 = new Card(); //only to be added, don't add to list
+    Card *card38 = new Card();
     card38->init("Dodge and weave|Gain 2 armor and 2 agility|Common|1|;armor|2|0|self|;agility|2|0|self|;");
     common_cards.push_back(card38);
-    card_name_map.insert(std::make_pair("First move", card38));
+    card_name_map.insert(std::make_pair("Dodge and weave", card38));
+
+    Card *card39 = new Card();
+    card39->init("Limber|Discard a card and gain 4 agility.|Common|1|;discard|1|0|self|;agility|4|0|self|;");
+    common_cards.push_back(card39);
+    card_name_map.insert(std::make_pair("Limber", card39));
+
+    Card *card40 = new Card();
+    card40->init("Unshackle|Gain 1 stamina and discard 1 card.|Common|0|;discard|1|0|self|;stamina|1|0|self|;");
+    common_cards.push_back(card40);
+    card_name_map.insert(std::make_pair("Unshackle", card40));
+
+    Card *card41 = new Card();
+    card41->init("Headbutt|Deal 15 damage and discard a card.|Common|1|;discard|1|0|self|;none|0|15|choose|;");
+    common_cards.push_back(card41);
+    card_name_map.insert(std::make_pair("Headbutt", card41));
+    card41->set_type("attack");
 
 
     Card *cardEx1 = new Card(); //only to be added, don't add to list
@@ -604,6 +664,7 @@ void Player::init_all_common_cards() {
     cardEx2->init("Pummel|Deal 1 damage, twice. Consume.|Common|0|;none|0|1|choose|;none|0|1|choose|;");
     cardEx2->set_consume();
     card_name_map.insert(std::make_pair("Pummel", cardEx2));
+    cardEx2->set_type("attack");
 
 }
 void Player::init_all_rare_cards() {
@@ -617,10 +678,11 @@ void Player::init_all_rare_cards() {
     card1->init("Kill kill kill|Deal 8X damage.|Rare|X|;none|0|8|choose|;");
     rare_cards.push_back(card1);
     card_name_map.insert(std::make_pair("Kill kill kill", card1));
+    card1->set_type("attack");
 
     //add cards to hand
     Card *card2 = new Card();
-    card2->init("Die die die|Gain 3 rage and add 3 Pummels to your hand|Rare|3|;add_card=Pummel|3|0|self|;rage|3|0|self|;");
+    card2->init("Die die die|Gain 2 rage and add 3 Pummels to your hand|Rare|3|;add_card=Pummel|3|0|self|;rage|2|0|self|;");
     rare_cards.push_back(card2);
     card_name_map.insert(std::make_pair("Die die die", card2));
 
@@ -635,7 +697,7 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Taunt", card4));
 
     Card *card5 = new Card();
-    card5->init("Iron will|Gain 15 armor. Retain your armor for 1 turn.|Rare|2|;armor|15|0|self|;retain_armor|1|0|self|;");
+    card5->init("Iron will|Gain 15 armor. Retain your armor for 1 turn.|Rare|2|;armor|15|0|self|;retain armor|1|0|self|;");
     rare_cards.push_back(card5);
     card_name_map.insert(std::make_pair("Iron will", card5));
 
@@ -653,6 +715,7 @@ void Player::init_all_rare_cards() {
     card8->init("Flying knee|Deal 30 damage to the closest enemy.|Rare|3|;none|0|35|closest enemy|;");
     rare_cards.push_back(card8);
     card_name_map.insert(std::make_pair("Flying knee", card8));
+    card8->set_type("attack-closest");
 
     Card *card9 = new Card();
     card9->init("Mixup|Your attacks for the rest of the turn deal double damage.|Rare|1|;2x|1|0|self|;");
@@ -685,9 +748,10 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Study opponent", card13));*/
 
     Card *card14 = new Card();
-    card14->init("Calculated strike|Deal 10 damage and draw 1 card.|Rare|1|;draw|1|0|self|;none|0|10|choose|;");
+    card14->init("Calculated strike|Deal 8 damage and draw 1 card.|Rare|1|;draw|1|0|self|;none|0|8|choose|;");
     rare_cards.push_back(card14);
     card_name_map.insert(std::make_pair("Calculated strike", card14));
+    card14->set_type("attack");
 
     Card *card15 = new Card();
     card15->init("Blood deal|Lose 5 hp and gain 2 stamina.|Rare|1|;stamina|2|0|self|;none|0|4|self|;");
@@ -700,19 +764,25 @@ void Player::init_all_rare_cards() {
     card_name_map.insert(std::make_pair("Cursed blood", card16));
 
     Card *card17 = new Card();
-    card17->init("Safeguard|Retain your armor for 2 turns.|Rare|2|;retain_armor|2|0|self|;");
-    common_cards.push_back(card17);
+    card17->init("Safeguard|Retain your armor for 2 turns.|Rare|2|;retain armor|2|0|self|;");
+    rare_cards.push_back(card17);
     card_name_map.insert(std::make_pair("Safeguard", card17));
 
     Card *card18 = new Card();
-    card18->init("Toxic armor|Gain 6 armor and 2 retaliate. Consume.|Rare|1|;armor|6|0|self|;retaliate|2|0|self|;");
+    card18->init("Toxic armor|Gain 8 armor and 2 retaliate. Consume.|Rare|1|;armor|8|0|self|;retaliate|2|0|self|;");
     card18->set_consume();
-    common_cards.push_back(card18);
+    rare_cards.push_back(card18);
     card_name_map.insert(std::make_pair("Toxic armor", card18));
+
+    Card *card19 = new Card();
+    card19->init("Blood barrier|Lose X health and retain armor for X turns.|Rare|X|;retain armor|1|0|self|;none|0|1|self|;");
+    rare_cards.push_back(card19);
+    card_name_map.insert(std::make_pair("Blood barrier", card19));
+
 
     /*Card *card19 = new Card();
     card19->init("Utilize skill|Draw cards equal to your agility.|Rare|0|;draw|1|0|self|;");
-    common_cards.push_back(card19);
+    rare_cards.push_back(card19);
     card_name_map.insert(std::make_pair("Utilize skill", card18));
     */
 }

@@ -39,6 +39,7 @@ public:             // Access specifier
     void display_map();
     void inc_player_effects();
     void inc_enemy_effects(Event* ev);
+    void do_end_turn_cards(Event* ev);
     void player_choose_starting();
 
     int calc_damage_players_attack(int dmg);

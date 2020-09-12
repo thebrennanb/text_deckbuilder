@@ -21,12 +21,14 @@ Card::~Card()
     this->stamina_cost = stamina_cost;
 }*/
 
-void Card::init(string info) {
+void Card::init(string name, string description, string rarity, string stamina_cost, string card_type, string info) {
     playable = true;
+    this->name = name;
+    this->stamina_cost = stamina_cost;
+    this->card_type = card_type;
+    this->description = description;
+    this->rarity = rarity;
     this->info = info;
-    d1 = ";";
-    d2 = "|";
-    //name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
 }
 
 void Card::set_unplayable() {
@@ -37,9 +39,6 @@ void Card::set_consume() {
     consume = true;
 }
 
-void Card::set_type(string type) {
-    card_type = type;
-}
 /*
 void Card::set_conditional(string cond) {
     //possible conditionals: :enemy;attack;0; (enemy attack for >= 0)    :self;cards played this turn;3 (cards played this turn >= 3)
@@ -59,43 +58,15 @@ void Card::upgrade(string upg) {
         retain = true;
     } else if(upg == "remove consume|cost+1") {
         consume = false;
-        size_t pos1 = 0;
-        size_t pos2 = 0;
-        string token;
-        string s = info;
-        int sumPos = 0;
-
-        pos1 = s.find(d1);
-        for(int i = 0; i < 4; i++) {
-            pos2 = s.find(d2);
-            token = s.substr(0, pos2);
-            s.erase(0, pos2 + 1);
-            sumPos+=(pos2+1);
-            if(i == 3) {
-                int staminaCost = info[sumPos-2]-48; //convert char to int
-                staminaCost+=1;
-                info[sumPos-2] = ('0' + staminaCost);
-            }
-        }
+        stamina_cost = to_string(stoi(stamina_cost)+1)
     } else if(upg == "damage+10") { //This will deal an extra 20X damage, maybe don't want this
         if(card_type == "attack") {
             info+="none|0|10|choose|;";
         } else if(card_type == "attack-closest") {
             info+="none|0|10|closest enemy|;";
         }
-        pos1 = s.find(d1);
-        for(int i = 0; i < 4; i++) {
-            pos2 = s.find(d2);
-            token = s.substr(0, pos2);
-            s.erase(0, pos2 + 1);
-            sumPos+=(pos2+1);
-            if(i == 1) { //change the description
-                cout << info[sumPos-2] << endl;
-                int staminaCost = info[sumPos-2]-48; //convert char to int
-                staminaCost+=1;
-                info[sumPos-2] = ('0' + staminaCost);
-            }
-        }
+        //change description
+        //also maybe put an extra upgrade string variable in card so that X cards don't do this X times
     } else if(upg == "damage+20|consume") { //This will deal an extra 20X damage, maybe don't want this
         if(card_type == "attack") {
             info+="none|0|20|choose|;";
@@ -103,39 +74,10 @@ void Card::upgrade(string upg) {
             info+="none|0|20|closest enemy|;";
         }
         consume = true;
-        pos1 = s.find(d1);
-        for(int i = 0; i < 4; i++) {
-            pos2 = s.find(d2);
-            token = s.substr(0, pos2);
-            s.erase(0, pos2 + 1);
-            sumPos+=(pos2+1);
-            if(i == 1) { //change the description
-                cout << info[sumPos-2] << endl;
-                int staminaCost = info[sumPos-2]-48; //convert char to int
-                staminaCost+=1;
-                info[sumPos-2] = ('0' + staminaCost);
-            }
-        }
+        //change description
+        //also maybe put an extra upgrade string variable in card so that X cards don't do this X times
     } else if(upg == "cost-1") {
-        size_t pos1 = 0;
-        size_t pos2 = 0;
-        string token;
-        string s = info;
-        int sumPos = 0;
-
-        pos1 = s.find(d1);
-        for(int i = 0; i < 4; i++) {
-            pos2 = s.find(d2);
-            token = s.substr(0, pos2);
-            cout << i << " " << sumPos << " " << token << endl;
-            s.erase(0, pos2 + 1);
-            sumPos+=(pos2+1);
-            if(i == 3) {
-                int staminaCost = info[sumPos-2]-48; //convert char to int
-                staminaCost-=1;
-                info[sumPos-2] = ('0' + staminaCost);
-            }
-        }
+        stamina_cost = to_string(stoi(stamina_cost)-1); //decrease cost by 1, ensured it won't be X.
     }
 }
 

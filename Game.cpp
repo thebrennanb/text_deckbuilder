@@ -681,6 +681,7 @@ void Game::play_player_turn() {
                     if(input[0] == "end" && input[1] == "turn") {
                         madeAction = true;
                         endTurn = true;
+                        do_end_turn_cards(event_map[y][x]);
                         cout << "Completed turn\n" << endl;
                     } else if(input[0] == "target") {
                         if(input[1] == "self") {
@@ -721,7 +722,7 @@ void Game::play_player_turn() {
                                 cout << "Card does not exist." << endl;
                             } else if(player->target == -2 || player->target >= event_map[y][x]->curr_enemies.size()) {
                                 cout << "Set a target first." << endl;
-                            } else if(player->hand[stoi(input[1])]->split()[0][3] != "X" && player->stamina-stoi(player->hand[stoi(input[1])]->split()[0][3]) < 0) { //not enough energy
+                            } else if(player->hand[stoi(input[1])]->stamina_cost != "X" && player->stamina-stoi(player->hand[stoi(input[1])]->stamina_cost) < 0) { //not enough energy
 
                                 cout << "Not enough stamina." << endl;
                             } else {
@@ -752,6 +753,58 @@ void Game::play_player_turn() {
     //will print if player quit.
 }
 
+void Game::do_end_turn_cards(Event* ev) {
+    for(Card* card : player->hand) {
+        vector<vector<string>> does = card->split();
+        for(int i = 0; i < does.size(); i++) {
+            if(does[i][0].size() > 8 && does[i][0].substr(0,7) == "end_turn") {
+                if(does[i][3] == "choose") {
+                    if(player->target == -1) { //player targeting self
+                        //Do I need this?
+                    }
+                    else { //targeting enemy
+                        if(stoi(does[i][2]) != 0) { //do damage if != 0
+                            ev->curr_enemies[player->target]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                            do_retaliate_enemy(ev->curr_enemies[player->target]);
+                        }
+                        if(does[i][0] != "end_turn_damage") {
+                            ev->curr_enemies[player->target]->add_effect(does[i][0].substr(9,does[i][0].size()), stoi(does[i][1]));
+                        }
+                    }
+
+                } else if(does[i][3] == "self") { //target to hit is inherently self - this is different from setting target to self
+                    //do not calculate damage, this damage to self from cards. Bypasses effects like block, weak, frail, rage, etc.
+                    if(does[i][0] != "end_turn_damage") {
+                        player->add_effect(does[i][0].substr(9,does[i][0].size()), stoi(does[i][1]));
+                    }
+                    if(stoi(does[i][2]) != 0) {
+                        player->take_damage(stoi(does[i][2])); //ignore players rage and block?
+                    }
+
+                } else if(does[i][3] == "all enemies") {
+                    for(int a = 0; a < ev->curr_enemies.size(); a++) {
+                        if(stoi(does[i][2]) != 0) { //do damage if != 0
+                            ev->curr_enemies[a]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                            do_retaliate_enemy(ev->curr_enemies[player->target]);
+                        }
+                        if(does[i][0] != "end_turn_damage") {
+                            ev->curr_enemies[a]->add_effect(does[i][0].substr(9,does[i][0].size()), stoi(does[i][1]));
+                        }
+                    }
+                } else if(does[i][3] == "closest enemy") { //do same as if player had target but only to 0th enemy
+                    if(stoi(does[i][2]) != 0) { //do damage if != 0
+                        ev->curr_enemies[0]->take_damage(calc_damage_players_attack(stoi(does[i][2])));
+                    }
+                    if(does[i][0] != "end_turn_damage") {
+                        ev->curr_enemies[0]->add_effect(does[i][0].substr(9,does[i][0].size()), stoi(does[i][1]));
+                    }
+                    do_retaliate_enemy(ev->curr_enemies[player->target]);
+                }
+            }
+        }
+    }
+}
+
 void Game::play_card(int idx) {
     //CHANGE
 
@@ -760,27 +813,24 @@ void Game::play_card(int idx) {
 
     //format: name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
     vector<vector<string>> does = player->hand[idx]->split();
-    string name = does[0][0];
     if(!player->hand[idx]->playable) { //card not playable
-        cout << name << " is unplayable." << endl;
+        cout << player->hand[idx]->name << " is unplayable." << endl;
         return;
     }
 
-    string description = does[0][1];
-    string classification = does[0][2];
     int staminaCost;
     int timesToPlay = 1;
-    if(does[0][3] == "X") {
+    if(player->hand[idx]->stamina_cost == "X") {
         staminaCost = player->stamina;
         timesToPlay = staminaCost;
     } else {
-        staminaCost = stoi(does[0][3]);
+        staminaCost = stoi(player->hand[idx]->stamina_cost);
     }
     player->stamina-=staminaCost; //subtract stamina cost from playing card
-    cout << "Played " << name << endl;
+    cout << "Played " << player->hand[idx]->name << endl;
 
     for(int t = 0; t < timesToPlay; t++) { //play 1 time if not "X", otherwise play staminaCost times
-        for(int i = 1; i < does.size(); i++) {
+        for(int i = 0; i < does.size(); i++) {
             if(does[i][3] == "choose") {
                 if(player->target == -1) { //player targeting self
                     //Do I need this?
@@ -827,9 +877,9 @@ void Game::play_card(int idx) {
     }
 
     if(player->hand[idx]->consume) {
+        cout << player->hand[idx]->name << " was consumed." << endl;
         player->consume_pile.push_back(player->hand[idx]); //put card in discard pile
         player->hand.erase(player->hand.begin()+idx); //remove card from hand.
-        cout << name << " was consumed." << endl;
     } else {
         player->discard_pile.push_back(player->hand[idx]); //put card in discard pile
         player->hand.erase(player->hand.begin()+idx); //remove card from hand.
@@ -901,10 +951,9 @@ void Game::play_enemy_turn() {
     for(int i = 0; i < event_map[y][x]->curr_enemies.size(); i++) {
         if(!event_map[y][x]->curr_enemies[i]->is_dead()) { //<shouldn't need this line
             vector<vector<string>> does = event_map[y][x]->curr_enemies[i]->attacks[event_map[y][x]->curr_enemies[i]->card_pos]->split();
-            string name = does[0][0];
-            cout << event_map[y][x]->curr_enemies[i]->name << " used " << name << "." << endl;
+            cout << event_map[y][x]->curr_enemies[i]->name << " used " << event_map[y][x]->curr_enemies[i]->attacks[event_map[y][x]->curr_enemies[i]->card_pos]->name << "." << endl;
 
-            for(int a = 1; a < does.size(); a++) {
+            for(int a = 0; a < does.size(); a++) {
                 if(does[a][3] == "player") { //enemy attacks player
                     if(stoi(does[a][2]) != 0) {
                         if(stoi(does[a][2]) != 0) { //do damage if != 0

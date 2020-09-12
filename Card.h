@@ -11,14 +11,13 @@ public:
     ~Card();
 
     //string split constants
-    string d1;
-    string d2;
+    string d1 = ";";
+    string d2 = "|";
 
-    void init(string info);
+    void init(string name, string description, string rarity, string stamina_cost, string card_type, string info);
     void set_conditional(string cond);
     void set_unplayable();
     void set_consume();
-    void set_type(string type); //this is for enemy cards
     void upgrade(string upg);
 
     vector<vector<string>> split();
@@ -29,4 +28,8 @@ public:
 
     string info;
     string card_type;
+    string name;
+    string stamina_cost;
+    string description;
+    string rarity;
 };

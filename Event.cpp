@@ -52,24 +52,20 @@ void Event::init_elite_enemies() {
         vector<Card*> v;
         Card *card = new Card();
         //name,description,classification,stamina_cost;effect_applied,effect_magnitude,damage,target;same
-        card->init("Execute|Deal 20 damage|a|0|;none|0|20|player|;");
-        card->set_type("attack");
+        card->init("Execute", "Deal 20 damage", "a", "0", "attack", "none|0|20|player|;");
         Card *card1 = new Card();
-        card1->init("Strike|Deal 6 damage|a|0|;none|0|3|player|;");
-        card1->set_type("attack");
+        card1->init("Strike", "Deal 6 damage", "a", "0", "attack", "none|0|3|player|;");
         Card *card2 = new Card();
-        card2->init("Mace swing|Deal 7 damage and add 1 wound to the player's discard pile|a|0|;add_status_wound|1|0|player|;none|0|7|player|;");
-        card2->set_type("attack");
+        card2->init("Mace swing", "Deal 7 damage and add 1 wound to the player's discard pile", "a", "0", "attack", "add_status_wound|1|0|player|;none|0|7|player|;");
         v.push_back(card1); //swapped order
         v.push_back(card);
         v.push_back(card2);
-        gladiator->init("Gladiator", v, 180, 0);
+        gladiator->init("Gladiator", v, 160, 0);
 
         int randNn = rand()%(5)-2; //-2 to 2
         vector<Card*> v2;
         Card *card5 = new Card();
-        card5->init("Strike|Deal 3 damage|a|0|;none|0|3|player|;");
-        card5->set_type("attack");
+        card5->init("Strike", "Deal 3 damage", "a", "0", "attack", "none|0|3|player|;");
         v2.push_back(card5);
         Enemy *henchman = new Enemy();
         henchman->init("Henchman", v2, 20+randNn, 0);
@@ -80,11 +76,9 @@ void Event::init_elite_enemies() {
         //illusionist
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Blinding flash|Add 2 daze to the player's discard pile|a|0|;add_status_daze|2|0|player|;");
-        card->set_type("add_status");
+        card->init("Blinding flash", "Add 2 daze to the player's discard pile", "a", "0", "add_status", "add_status_daze|2|0|player|;");
         Card *card2 = new Card();
-        card2->init("Trick|Deal 5 damage and add 1 daze to the player's discard pile|a|0|;none|0|5|player|;add_status_daze|1|0|player|;");
-        card2->set_type("attack");
+        card2->init("Trick", "Deal 5 damage and add 1 daze to the player's discard pile", "a", "0", "attack", "none|0|5|player|;add_status_daze|1|0|player|;");
         v.push_back(card);
         v.push_back(card2);
 
@@ -112,17 +106,13 @@ void Event::init_elite_enemies() {
         //illusionist
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Serrated edge|Deal 3 damage and add 3 bleed to the player's discard pile|a|0|;add_status_bleed|3|0|player|;none|0|3|player|;");
-        card->set_type("attack");
+        card->init("Serrated edge", "Deal 3 damage and add 3 bleed to the player's discard pile", "a", "0", "attack", "add_status_bleed|3|0|player|;none|0|3|player|;");
         Card *card2 = new Card();
-        card2->init("7 swords|Deal 2 damage, 7 times|a|0|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;none|0|2|player|;");
-        card2->set_type("attack");
+        card2->init("7 swords", "Deal 1 damage, 7 times", "a", "0", "attack", "none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;");
         Card *card3 = new Card();
-        card3->init("Pin|Deal 5 damage and add 1 bleed to the player's discard pile|a|0|;add_status_bleed|1|0|player|;none|0|5|player|;");
-        card3->set_type("attack");
+        card3->init("Pin", "Deal 5 damage and add 1 bleed to the player's discard pile", "a", "0", "attack", "add_status_bleed|1|0|player|;none|0|5|player|;");
         Card *card4 = new Card();
-        card4->init("Hone swords|Gain 2 rage and 2 vulnerable|a|0|;rage|2|0|self|;vulnerable|2|0|self|;");
-        card4->set_type("attack");
+        card4->init("Hone swords", "Gain 5 rage", "a", "0", "effect", "rage|4|0|self|;");
         v.push_back(card);
         v.push_back(card2);
         v.push_back(card3);
@@ -130,7 +120,7 @@ void Event::init_elite_enemies() {
 
         int randNn = rand()%(5)-2; //-2 to 2
         Enemy *enemy1 = new Enemy();
-        enemy1->init("Sword slinger", v, 70+randNn, 0);
+        enemy1->init("Sword slinger", v, 80+randNn, 0);
         curr_enemies.push_back(enemy1);
 
         //think of one
@@ -146,8 +136,7 @@ void Event::init_enemies() {
         //bandit
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Stab|Deal 5 damage|a|0|;none|0|5|player|;");
-        card->set_type("attack");
+        card->init("Stab", "Deal 5 damage", "a", "0", "attack", "none|0|5|player|;");
         v.push_back(card);
         for(int i = 0; i < 2; i++) {
             int randNn = rand()%(5)-2; //-2 to 2
@@ -160,11 +149,9 @@ void Event::init_enemies() {
         //slime
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Lick|Give 1 vulnerable|a|0|;vulnerable|1|0|player|;");
-        card->set_type("add_effect");
+        card->init("Lick", "Give 1 vulnerable", "a", "0", "effect", "vulnerable|1|0|player|;");
         Card *card2 = new Card();
-        card2->init("Phagocytosis|Deal 3 damage|a|0|;none|0|3|player|;");
-        card2->set_type("attack");
+        card2->init("Phagocytosis", "Deal 3 damage", "a", "0", "attack", "none|0|3|player|;");
         v.push_back(card);
         v.push_back(card2);
         for(int i = 0; i < 5; i++) { //5 slimes
@@ -183,17 +170,13 @@ void Event::init_enemies() {
         //demon acolyte
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Hellpower|Gain 4 rage|a|0|;rage|3|0|self|;");
-        card->set_type("add_effect");
+        card->init("Hellpower", "Gain 4 rage", "a", "0", "effect", "rage|3|0|self|;");
         Card *card5 = new Card();
-        card5->init("Swipe|Deal 8 damage|a|0|;none|0|8|player|;");
-        card5->set_type("attack");
+        card5->init("Swipe", "Deal 8 damage", "a", "0", "attack", "none|0|8|player|;");
         Card *card2 = new Card();
-        card2->init("Screech|Give 3 weak|a|0|;weak|3|0|player|;");
-        card2->set_type("add_effect");
+        card2->init("Screech", "Give 3 weak", "a", "0", "effect", "weak|3|0|player|;");
         Card *card4 = new Card();
-        card4->init("Brimstone|Deal 30 damage|a|0|;none|0|30|player|;");
-        card4->set_type("attack");
+        card4->init("Brimstone", "Deal 30 damage", "a", "0", "attack", "none|0|30|player|;");
         v.push_back(card);
         v.push_back(card5);
         v.push_back(card2);
@@ -208,17 +191,13 @@ void Event::init_enemies() {
         //stone guard
         vector<Card*> v;
         Card *card = new Card();
-        card->init("Defensive stance|Gain 15 armor|a|0|;armor|15|0|self|;");
-        card->set_type("add_effect");
+        card->init("Defensive stance", "Gain 15 armor", "a", "0", "effect", "armor|15|0|self|;");
         Card *card2 = new Card();
-        card2->init("Thorn armor|Gain 4 retaliate|a|0|;retaliate|4|0|self|;");
-        card2->set_type("add_effect");
+        card2->init("Thorn armor", "Gain 4 retaliate", "a", "0", "effect", "retaliate|4|0|self|;");
         Card *card3 = new Card();
-        card3->init("Defensive stance|Gain 15 armor|a|0|;armor|15|0|self|;");
-        card3->set_type("add_effect");
+        card3->init("Defensive stance", "Gain 15 armor", "a", "0", "effect", "armor|15|0|self|;");
         Card *card4 = new Card();
-        card4->init("Armored strike|Deal 10 damage and gain 5 armor|a|0|;armor|5|0|self|;none|0|10|player|;");
-        card4->set_type("attack");
+        card4->init("Armored strike", "Deal 10 damage and gain 5 armor", "a", "0", "attack", "armor|5|0|self|;none|0|10|player|;");
         v.push_back(card);
         v.push_back(card2);
         v.push_back(card3);
@@ -239,23 +218,19 @@ void Event::init_boss() {
     vector<Card*> v;
 
     Card *card1 = new Card();
-    card1->init("Empower|Gain 5 rage|a|0|;rage|5|0|self|;");
-    card1->set_type("add_status");
+    card1->init("Empower", "Gain 5 rage", "a", "0", "add_status", "rage|5|0|self|;");
     v.push_back(card1);
 
     Card *card4 = new Card();
-    card4->init("Gnash|Deal 1 damage, 4 times|a|0|;none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;");
-    card4->set_type("attack");
+    card4->init("Gnash", "Deal 1 damage, 4 times", "a", "0", "attack", "none|0|1|player|;none|0|1|player|;none|0|1|player|;none|0|1|player|;");
     v.push_back(card4);
 
     Card *card = new Card();
-    card->init("Heavy strike|Deal 25 damage|a|0|;none|0|25|player|;");
-    card->set_type("attack");
+    card->init("Heavy strike", "Deal 25 damage", "a", "0", "attack", "none|0|25|player|;");
     v.push_back(card);
 
     Card *card2 = new Card();
-    card2->init("Double slash|Deal 3 damage, twice|a|0|;none|0|3|player|;none|0|3|player|;");
-    card2->set_type("attack");
+    card2->init("Double slash", "Deal 3 damage, twice", "a", "0", "attack", "none|0|3|player|;none|0|3|player|;");
     v.push_back(card2);
 
     boss->init("Blood demon", v, 300, 0);
@@ -270,7 +245,7 @@ void Event::check_dead() { //kind of like an update enemy size method.
     for(int i = 0; i < curr_enemies.size(); i++) {
         if(curr_enemies[i]->is_dead()) {
             curr_enemies.erase(curr_enemies.begin()+i);
-            i = 0;
+            i--;
         }
     }
 }
@@ -299,8 +274,8 @@ void Event::display_enemies() {
             }
         }
         cout << curr_enemies[i]->name << " intends to use " << nameCurrAtk << "." << endl;*/
-        vector<vector<string>> splt = curr_enemies[i]->attacks[curr_enemies[i]->card_pos]->split();
-        cout << curr_enemies[i]->name << " intends to use " << splt[0][0] << ": " << splt[0][1] << "." << endl;
+        Card* c = curr_enemies[i]->attacks[curr_enemies[i]->card_pos];
+        cout << curr_enemies[i]->name << " intends to use " << c->name << ": " << c->description << "." << endl;
         if(!curr_enemies[i]->effects.empty()) {
             cout << "Effects:" << endl;
             for(int q=0; q<curr_enemies[i]->effects.size(); q++) {
@@ -343,13 +318,11 @@ bool Event::shop_offer(Player *p) {
         cout << "You have " << p->coins << " coins left. What will you buy?" << endl;
         //print common cards
         for(int i = 0; i < commonCardList.size(); i++) {
-            vector<vector<string>> does = commonCardList[i]->split();
-            cout << i << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--  ($" << commonCost << ")" << endl;
+            cout << i << ":   (" << commonCardList[i]->stamina_cost << ") [" << commonCardList[i]->rarity << "]: " << commonCardList[i]->name <<  " --" << commonCardList[i]->description << "--  ($" << commonCost << ")" << endl;
         }
         //print rare cards
         for(int i = 0; i < rareCardList.size(); i++) {
-            vector<vector<string>> does = rareCardList[i]->split();
-            cout << i+commonCardList.size() << ":   (" << does[0][3] << ") [" << does[0][0] << "]: " << does[0][2] <<  " --" << does[0][1] << "--  ($" << rareCost << ")" << endl;
+            cout << i+commonCardList.size() << ":   (" << rareCardList[i]->stamina_cost << ") [" << rareCardList[i]->rarity << "]: " << rareCardList[i]->name <<  " --" << rareCardList[i]->description << "--  ($" << rareCost << ")" << endl;
         }
 
         if(rem_dup == 0) { //0: remove card
@@ -438,8 +411,7 @@ bool Event::shop_offer(Player *p) {
                         if(p->coins >= removeCardCost) {
                             cout << "Which card will you remove? (Or type back to go back.)" << endl;
                             for(int aa = 0; aa < p->deck.size(); aa++) {
-                                vector<vector<string>> does = p->deck[aa]->split();
-                                cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                                cout << aa << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
                             }
                             string pos;
                             while(1) {
@@ -451,7 +423,7 @@ bool Event::shop_offer(Player *p) {
                                     cout << "Choose a card based on its index." << endl;
                                 } else {
                                     if(stoi(pos) < p->deck.size()) {
-                                        cout << "Removed " << p->deck[stoi(pos)]->split()[0][0] << endl;
+                                        cout << "Removed " << p->deck[stoi(pos)]->name << endl;
                                         p->deck.erase(p->deck.begin() + stoi(pos));
                                         p->coins-=removeCardCost;
                                         removeCardCost+=removeCardCostIncrease;
@@ -470,8 +442,7 @@ bool Event::shop_offer(Player *p) {
                         if(p->coins >= duplicateCardCost) {
                             cout << "Which card will you duplicate? (Or type back to go back)" << endl;
                             for(int aa = 0; aa < p->deck.size(); aa++) {
-                                vector<vector<string>> does = p->deck[aa]->split();
-                                cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                                cout << aa << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
                             }
                             string pos;
                             while(1) {
@@ -483,8 +454,7 @@ bool Event::shop_offer(Player *p) {
                                     cout << "Choose a card based on its index." << endl;
                                 } else {
                                     if(stoi(pos) < p->deck.size()) {
-                                        string name = p->deck[stoi(pos)]->split()[0][0];
-                                        //cout << "name = " << p->card_name_map[name]->split()[0][0] << endl; //test
+                                        string name = p->deck[stoi(pos)]->name;
                                         p->deck.push_back(p->card_name_map[name]); //doing it this way to not deal with
                                         cout << "Duplicated " << name << endl;
                                         p->coins-=duplicateCardCost;
@@ -509,7 +479,7 @@ bool Event::shop_offer(Player *p) {
                                 if(pos < commonCardList.size()+rareCardList.size()) {
                                     if(pos < commonCardList.size()) {
                                         if(p->coins >= commonCost) {
-                                            cout << "Added a " << commonCardList[pos]->split()[0][0] << " to your deck." << endl;
+                                            cout << "Added a " << commonCardList[pos]->name << " to your deck." << endl;
                                             p->deck.push_back(commonCardList[pos]);
                                             commonCardList.erase(commonCardList.begin() + pos);
                                             p->coins-=commonCost;
@@ -519,7 +489,7 @@ bool Event::shop_offer(Player *p) {
                                         }
                                     } else {
                                         if(p->coins >= rareCost) {
-                                            cout << "Added a " << rareCardList[pos-commonCardList.size()]->split()[0][0] << " to your deck." << endl;
+                                            cout << "Added a " << rareCardList[pos-commonCardList.size()]->name << " to your deck." << endl;
                                             p->deck.push_back(rareCardList[pos-commonCardList.size()]);
                                             rareCardList.erase(rareCardList.begin() + pos-commonCardList.size());
                                             p->coins-=rareCost;
@@ -555,7 +525,7 @@ bool Event::shop_offer(Player *p) {
                                                     cout << "Choose an existing card." << endl;
                                                 } else {
                                                     p->coins-=get_upgrade_cost(upgradeList[upgradeNum]);
-                                                    cout << "Upgraded " << p->deck[it->second]->split()[0][0] << endl;
+                                                    cout << "Upgraded " << p->deck[it->second]->name << endl;
                                                     p->deck[it->second]->upgrade(upgradeList[upgradeNum]);
                                                     madeAction = true;
                                                     upgradeList.erase(upgradeList.begin() + upgradeNum); //remove this upgrade from the list
@@ -626,9 +596,8 @@ map<int, int> Event::print_cards_upgrade(string upg, Player *p) {
     //v these 2 can only apply to certain cards
     if(upg == "cost-1") { //bad way of doing this but oh well
         for(int aa = 0; aa < p->deck.size(); aa++) {
-            vector<vector<string>> does = p->deck[aa]->split();
-            if(does[0][3] != "X" && stoi(does[0][3]) > 0) { //only print cards with cost > 1
-                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+            if(p->deck[aa]->stamina_cost != "X" && stoi(p->deck[aa]->stamina_cost) > 0) { //only print cards with cost > 1
+                cout << runningNum << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
                 card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
                 runningNum++;
             }
@@ -636,8 +605,7 @@ map<int, int> Event::print_cards_upgrade(string upg, Player *p) {
     } else if(upg == "remove consume|cost+1") { //bad way of doing this but oh well
         for(int aa = 0; aa < p->deck.size(); aa++) {
             if(p->deck[aa]->consume) { //only print cards with consume
-                vector<vector<string>> does = p->deck[aa]->split();
-                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                cout << runningNum << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
                 card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
                 runningNum++;
             }
@@ -645,16 +613,14 @@ map<int, int> Event::print_cards_upgrade(string upg, Player *p) {
     } else if(upg == "damage+20|consume" || upg == "damage+10") {
         for(int aa = 0; aa < p->deck.size(); aa++) {
             if(p->deck[aa]->card_type == "attack" || p->deck[aa]->card_type == "attack-closest") { //only print cards that are attacks
-                vector<vector<string>> does = p->deck[aa]->split();
-                cout << runningNum << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+                cout << runningNum << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
                 card_convs.insert(std::make_pair(runningNum, aa)); // the card index printed :: the actual card index in deck
                 runningNum++;
             }
         }
     } else {
         for(int aa = 0; aa < p->deck.size(); aa++) {
-            vector<vector<string>> does = p->deck[aa]->split();
-            cout << aa << "   (" << does[0][3] << ") [" << does[0][0] << "] --" << does[0][1] << "--" << endl;
+            cout << aa << "   (" << p->deck[aa]->stamina_cost << ") [" << p->deck[aa]->name << "] --" << p->deck[aa]->description << "--" << endl;
             card_convs.insert(std::make_pair(aa, aa)); // the card index printed :: the actual card index in deck
         }
     }
